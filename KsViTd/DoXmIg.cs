@@ -18,10 +18,6 @@ namespace KsViTd {
             return this;
         }
 
-        public void QmTdHzTd() {
-            Console.WriteLine("QmTdHzTd");
-        }
-
         #region 委托
 
         /// <summary>
@@ -146,6 +142,10 @@ namespace KsViTd {
             return this;
         }
 
+        public DoXmIg Thread3() {
+            return this;
+        }
+
         #endregion
 
 
@@ -179,6 +179,28 @@ namespace KsViTd {
 
             //AutoResetEvent
             //Interlocked.Decrement()
+
+            return this;
+        }
+
+        public DoXmIg ThreadPool2() {
+            //ExecutionContext
+            // 将一些数据放到当前线程的“执行上下文”
+            System.Runtime.Remoting.Messaging.CallContext.LogicalSetData("Name", "AAA");
+
+            ThreadPool.QueueUserWorkItem( async state => {
+                await Task.Delay(1000 * 2);
+                Console.WriteLine("Name=" + System.Runtime.Remoting.Messaging.CallContext.LogicalGetData("Name"));
+            });
+            
+            // 阻止当前线程的“执行上下文”流动
+            ExecutionContext.SuppressFlow();
+
+            ThreadPool.QueueUserWorkItem(
+                state => Console.WriteLine("Name=" + System.Runtime.Remoting.Messaging.CallContext.LogicalGetData("Name")));
+
+            ExecutionContext.RestoreFlow();
+            Console.WriteLine("RestoreFlow");
 
             return this;
         }

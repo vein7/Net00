@@ -40,7 +40,7 @@ namespace KsViTd {
         static Kv<int, int> Kv = new Kv<int, int>(3, 4);
 
         static void Main(string[] args) {
-            var tester = new DoXmIg().Thread2();
+            var tester = new DoXmIg().ThreadPool2();
 
             //new FjUe();
             //new Linq();
