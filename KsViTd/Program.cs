@@ -40,13 +40,13 @@ namespace KsViTd {
         static Kv<int, int> Kv = new Kv<int, int>(3, 4);
 
         static void Main(string[] args) {
-            var tester = new DoXmIg().ThreadPool2();
+            var tester = new DoXmIg().Task4();
 
             //new FjUe();
             //new Linq();
             //StructTest1();
             //Test();
-            //new CsLang().TestUuZu();
+            //new CsLang().TestException1();
             //new DynamicTest().Test();
             //var a = IEnumTest();
 

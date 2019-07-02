@@ -245,19 +245,21 @@ namespace KsViTd {
         /// <returns></returns>
         public DoXmIg Task2() {
             Func<object,string> fun1 = (a) => {
-                Thread.Sleep(200);
-                Console.WriteLine("...........fun1, " + a);
+                Console.WriteLine($".....fun1-start, {DateTime.Now.ToLongTimeString()}, ");
+                Thread.Sleep(1200);
+                Console.WriteLine($"...........fun1, {DateTime.Now.ToLongTimeString()}, " + a);
                 return $"[fun1 :{a}]";
             };
 
             Func<Task<string>,object,string> fun2 = (t, s) => {
-                Thread.Sleep(2000);
-                Console.WriteLine("...........fun2, " + s);
+                Console.WriteLine($".....fun2-start, {DateTime.Now.ToLongTimeString()}, ");
+                Thread.Sleep(3000);
+                Console.WriteLine($"...........fun2, {DateTime.Now.ToLongTimeString()}, " + s);
                 return $"{t.Result},[fun2 :{s}]";
             };
             Func<Task<string>, object, string> fun3 = (t, s) => {
-                Thread.Sleep(100);
-                Console.WriteLine("...........fun3, " + s);
+                Thread.Sleep(5100);
+                Console.WriteLine($"...........fun3, {DateTime.Now.ToLongTimeString()}, " + s);
                 return $"{t.Result},[fun3 :{s}]";
             };
 
@@ -306,6 +308,38 @@ namespace KsViTd {
             return this;
         }
 
+        public DoXmIg Task4() {
+            Func<CancellationToken, int, int> fnSum = (ct, n) => {
+                int sum = 0;
+                for (; n > 0; n--) {
+                    // 抛出 OperationCanceledException 异常，表示 Task 没有一直执行结束
+                    ct.ThrowIfCancellationRequested();
+                    checked { sum += n; }
+                }
+                return sum;
+            };
+
+            var cts = new CancellationTokenSource();
+            var t1 = Task.Run(() => fnSum(cts.Token, 1_000_000_000));
+            //cts.Cancel();     // 如果取消之前 Task 没有执行 Start，会直接取消，不会执行
+            cts.CancelAfter(100);
+
+            try {
+                // 可能会抛出 AggregateException 异常，可能是 OperationCanceledException 或 OverflowException
+                Console.WriteLine($"sum = {t1.Result}");
+            } catch (AggregateException aEx) {
+                try {
+                    // 如果还存在未处理的异常会继续抛出新的 AggregateException
+                    aEx.Handle(e => e is OperationCanceledException);
+                    Console.WriteLine("canceled");
+                } catch (AggregateException aEx2) {
+                    aEx2.Handle(e => e is OverflowException);
+                    Console.WriteLine("run fnSum --OverflowException");
+                }
+            } 
+
+            return this;
+        }
 
         #endregion
 

@@ -34,6 +34,20 @@ namespace KsViTd {
             return this;
         }
 
+        public CsLang TestException1() {
+            // 下一层Catch 是否能捕获上一层 Catch
+            try {
+                throw new ArgumentNullException("ArgumentNullException");
+            } catch (ArgumentNullException ex) {
+                Console.WriteLine(ex.Message);
+                // 这里抛出的异常不会被下一层的捕获到
+                throw new NullReferenceException("NullReferenceException");
+            } catch (NullReferenceException ex) {
+                Console.WriteLine(ex.Message);
+            }
+            return this;
+        }
+
         public void F1(out object obj) {
             obj = new List<int>();
         }
@@ -150,16 +164,6 @@ namespace KsViTd {
         }
 
         static class Clone<T> {
-
-        }
-
-        abstract class ColModels<T> {
-             
-        }
-        class CluesColModel : ColModels<int> {
-            static List<int> cols = new List<int>();
-            public CluesColModel(bool isReconstruct) {
-            }
 
         }
 
