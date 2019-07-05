@@ -40,7 +40,7 @@ namespace KsViTd {
         static Kv<int, int> Kv = new Kv<int, int>(3, 4);
 
         static void Main(string[] args) {
-            var tester = new DoXmIg().Task4();
+            var tester = new DoXmIg().Parallel2();
 
             //new FjUe();
             //new Linq();
@@ -55,7 +55,7 @@ namespace KsViTd {
 
             //Primitive<int>.TryParse("333", out var intA);
             //Primitive<long>.TryParse("333", out var longB);
-
+            
 
             //new LTest().Test2();
             Console.ReadKey();

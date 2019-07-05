@@ -341,6 +341,42 @@ namespace KsViTd {
             return this;
         }
 
+        public DoXmIg Task5() {
+            var parent = new Task<int[]>(() => {
+                Console.WriteLine("parent start" + DateTime.Now.ToLongTimeString());
+                var ls = new int[3];
+
+                new Task(() => {
+                    Thread.Sleep(1000);
+                    ls[0] = 1000;
+                }, TaskCreationOptions.AttachedToParent)
+                .Start();
+                new Task(() => {
+                    Thread.Sleep(1500);
+                    ls[1] = 1500;
+                    Console.WriteLine("1 --" + DateTime.Now.ToLongTimeString());
+                }, TaskCreationOptions.AttachedToParent)
+                .Start();
+                new Task(() => {
+                    Thread.Sleep(2000);
+                    ls[2] = 2000;
+                    Console.WriteLine("2 --" + DateTime.Now.ToLongTimeString());
+                }, TaskCreationOptions.AttachedToParent)
+                .Start();
+
+                // TaskCreationOptions.AttachedToParent 附加到当前 Task，当前 Task 不会认为已经执行完毕了，
+                // 还需要这三个Task 执行完毕才返回结果
+                return ls;
+            });
+
+            parent.ContinueWith((t) => Console.WriteLine(string.Join(",", t.Result)));
+            parent.Start();
+            var tf = new TaskFactory<int>();
+
+            Console.WriteLine("Task5 Return ---" + DateTime.Now.ToLongTimeString());
+            return this;
+        }
+
         #endregion
 
         #region Parallel
@@ -375,18 +411,17 @@ namespace KsViTd {
         /// Parallel.For    localInit    localFinally
         /// </summary>
         /// <returns></returns>
-        public DoXmIg Parallel2() { 
-
-            Parallel.For(0, 20
+        public DoXmIg Parallel2() {
+            Parallel.For(0, 110_000_000
                 , () => {
                     var info = $"TaskId:{Task.CurrentId}, ThreadId:{Thread.CurrentThread.ManagedThreadId}";
-                    Console.WriteLine("线程的初始化," + info);
+                    //Console.WriteLine("线程的初始化," + info);
                     return 1000;
                 }
                 , (i, state, local) => {
                     var info = $"TaskId:{Task.CurrentId}, ThreadId:{Thread.CurrentThread.ManagedThreadId}";
-                    Console.WriteLine(i.ToString() + ", " + info);
-                    local += i;
+                    //Console.WriteLine(i.ToString() + ", " + info);
+                    local += 1;
                     //Thread.Sleep(10);
 
                     return local;
