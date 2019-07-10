@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 namespace KsViTd {
     class DoXmIg {
@@ -12,7 +15,7 @@ namespace KsViTd {
             TestInvoke2();
 
             System.Xml.Linq.XNamespace ns1 = "";
-            
+
 
 
             return this;
@@ -27,10 +30,11 @@ namespace KsViTd {
         public DoXmIg TestInvoke1() {
             Func<int, int, int> fun = (a, sleepMs) => {
                 System.Threading.Thread.Sleep(sleepMs);
-                return ++a; };
+                return ++a;
+            };
 
             var asyncR = fun.BeginInvoke(2, 5000
-                , (o) => Console.WriteLine(o.AsyncState )
+                , (o) => Console.WriteLine(o.AsyncState)
                 , "a");
 
             // asyncR.IsCompleted 线程是否执行完成。
@@ -52,7 +56,7 @@ namespace KsViTd {
         public DoXmIg TestInvoke2() {
             Func<int, int, int> fun = (a, sleepMs) => {
                 var count = sleepMs / 200;
-                for(var i = 0; i < count; ++i) {
+                for (var i = 0; i < count; ++i) {
                     Console.Write("+");
                     System.Threading.Thread.Sleep(200);
                 }
@@ -105,7 +109,7 @@ namespace KsViTd {
         }
 
         #endregion
-        
+
         #region Thread
         // 只要有一个前台线程在运行, 应用程序的进程就在运行.
         // 如果有多个前台线程在运行, 而 Main() 方法结束了, 程序的进程仍然是激活的, 直到所有前台进程执行完成为止.
@@ -117,14 +121,14 @@ namespace KsViTd {
                 obj => Console.WriteLine(obj))
             .Start("start");
 
-            
+
             Console.WriteLine("---");
             return this;
         }
 
         public DoXmIg Thread2() {
             var t = new Thread(obj => {
-                try { 
+                try {
                     Console.WriteLine("..");
                     Thread.Sleep(3000);
                     Console.WriteLine(obj);
@@ -166,7 +170,7 @@ namespace KsViTd {
             stopwatch.Start();
 
             Console.WriteLine("-----------");
-            for(var i = 0; i < 100; ++i) {
+            for (var i = 0; i < 100; ++i) {
                 ThreadPool.QueueUserWorkItem(call, "A");     //加入队列的时候就直接运行了.
             }
             ThreadPool.QueueUserWorkItem(
@@ -175,7 +179,7 @@ namespace KsViTd {
                     watch.Stop();
                     Console.WriteLine($"当前耗时:" + watch.Elapsed);
                 }
-                , stopwatch);     
+                , stopwatch);
 
             //AutoResetEvent
             //Interlocked.Decrement()
@@ -188,11 +192,11 @@ namespace KsViTd {
             // 将一些数据放到当前线程的“执行上下文”
             System.Runtime.Remoting.Messaging.CallContext.LogicalSetData("Name", "AAA");
 
-            ThreadPool.QueueUserWorkItem( async state => {
+            ThreadPool.QueueUserWorkItem(async state => {
                 await Task.Delay(1000 * 2);
                 Console.WriteLine("Name=" + System.Runtime.Remoting.Messaging.CallContext.LogicalGetData("Name"));
             });
-            
+
             // 阻止当前线程的“执行上下文”流动
             ExecutionContext.SuppressFlow();
 
@@ -215,11 +219,11 @@ namespace KsViTd {
 
             // 
             new TaskFactory().StartNew(call, "new TaskFactory");
-            
+
             //new Task()    TaskStatus.Created 
             //.Start()      开始执行
             new Task(call, "new Task").Start();
-            
+
             // 
             Task.Factory.StartNew(call, "Task.Factory.StartNew");
 
@@ -244,14 +248,14 @@ namespace KsViTd {
         /// </summary>
         /// <returns></returns>
         public DoXmIg Task2() {
-            Func<object,string> fun1 = (a) => {
+            Func<object, string> fun1 = (a) => {
                 Console.WriteLine($".....fun1-start, {DateTime.Now.ToLongTimeString()}, ");
                 Thread.Sleep(1200);
                 Console.WriteLine($"...........fun1, {DateTime.Now.ToLongTimeString()}, " + a);
                 return $"[fun1 :{a}]";
             };
 
-            Func<Task<string>,object,string> fun2 = (t, s) => {
+            Func<Task<string>, object, string> fun2 = (t, s) => {
                 Console.WriteLine($".....fun2-start, {DateTime.Now.ToLongTimeString()}, ");
                 Thread.Sleep(3000);
                 Console.WriteLine($"...........fun2, {DateTime.Now.ToLongTimeString()}, " + s);
@@ -285,7 +289,7 @@ namespace KsViTd {
         public DoXmIg Task3() {
             Action child = () => {
                 Console.WriteLine("Id:" + Task.CurrentId);
-                for(var i = 0; i < 20; ++i) {
+                for (var i = 0; i < 20; ++i) {
                     Thread.Sleep(200);
                     Console.Write(",");
                 }
@@ -336,7 +340,7 @@ namespace KsViTd {
                     aEx2.Handle(e => e is OverflowException);
                     Console.WriteLine("run fnSum --OverflowException");
                 }
-            } 
+            }
 
             return this;
         }
@@ -402,7 +406,7 @@ namespace KsViTd {
                 Console.WriteLine(" [End]");
                 Thread.Sleep(200);
             });
-             
+
 
             return this;
         }
@@ -452,5 +456,157 @@ namespace KsViTd {
 
         #endregion
 
+        public DoXmIg Timer1() {
+            var t1 = new Timer(o => Console.WriteLine(o), "ss", 1000 * 10, 1000 * 3);
+            // t1 对象如果被垃圾回收，回调将不会执行，所以要有一个变量或成员保持 Timer 的存活
+            return this;
+        }
+
+        public DoXmIg Timer2() {
+            Timer t2 = null;        // 必须提前声明赋值，闭包报错
+            t2 = new Timer((o) => {
+                t2.Change(1000 * 3, -1);        // 运行正常，但不知道会不会可能为 null，然后出错
+                Console.WriteLine(DateTime.Now.ToLongTimeString());
+            }, null, 0, -1);
+            return this;
+        }
+
+        #region Task StateMachine
+        // 抄录自《CLR via C#》 28.4
+
+        internal sealed class Type1 { }
+
+        internal sealed class Type2 { }
+
+        private static async Task<Type1> Method1Async() {
+            await Task.Delay(1000);
+            return new Type1();
+        }
+
+        private static async Task<Type2> Method2Async() {
+            await Task.Delay(300);
+            return new Type2();
+        }
+
+        public static async Task<string> TaskAsync1(int argument) {
+            int locat = argument;
+            try {
+                Type1 result1 = await Method1Async();
+                for (var x = 0; x < 3; x++) {
+                    Type2 result2 = await Method2Async();
+                }
+            } catch (Exception) {
+                Console.WriteLine("Catch");
+            } finally {
+                Console.WriteLine("Finally");
+            }
+            return "Done";
+        }
+
+        // IL逆向，转换的代码
+        [DebuggerStepThrough, AsyncStateMachine(typeof(StateMachine))]
+        public static Task<string> TaskAsync2(int argument) {
+            StateMachine stateMachine = new StateMachine() {
+                m_builder = AsyncTaskMethodBuilder<string>.Create(),
+                m_state = -1,
+                m_argument = argument
+            };
+
+            stateMachine.m_builder.Start(ref stateMachine);
+            return stateMachine.m_builder.Task;
+        }
+
+        struct StateMachine : System.Runtime.CompilerServices.IAsyncStateMachine {
+            public AsyncTaskMethodBuilder<string> m_builder;
+            public int m_state;
+            public int m_argument, m_local, m_x;
+            public Type1 m_resultType1;
+            public Type2 m_resultType2;
+
+            private TaskAwaiter<Type1> m_awaiterType1;
+            private TaskAwaiter<Type2> m_awaiterType2;
+
+            void IAsyncStateMachine.MoveNext() {
+                string result = null;
+
+                // 编译器插入 try 块来确保状态机的任务完成，很有可能程序员编写的代码抛出异常，
+                try {
+                    bool executeFinally = true;     
+                    if (m_state == -1) { m_local = m_argument; }
+
+                    // 开始插入程序员编写的原始代码
+                    // 原始代码中的 Try 块
+                    try {
+                        TaskAwaiter<Type1> awaiterType1;
+                        TaskAwaiter<Type2> awaiterType2;
+
+                        switch (m_state) {
+                        case -1:
+                            awaiterType1 = Method1Async().GetAwaiter();
+                            if (!awaiterType1.IsCompleted) {
+                                m_state = 0;    // 原始代码要以异步的方式完成
+                                m_awaiterType1 = awaiterType1;
+                                m_builder.AwaitUnsafeOnCompleted(ref awaiterType1, ref this);
+
+                                executeFinally = false;
+                                return;
+                            }
+                            // else 原始代码以同步的方式完成，因为后面会执行 GetResult()，会阻塞当前线程
+                            break;
+                        case 0:     // 原始代码以异步的方式完成了
+                            awaiterType1 = m_awaiterType1;      // 恢复最新的 awaiter
+                            // ? 这里为什么要赋值，直接使用 ref awaiterType1，不是有值了吗，或者可以直接使用类成员
+                            break;
+                        case 1:
+                            awaiterType2 = m_awaiterType2;
+                            goto ForLoopEpilog;
+                        }
+
+                        m_resultType1 = awaiterType1.GetResult();
+
+                        ForLoopPrologue:
+                        m_x = 0;
+                        goto ForLoopBody;
+
+                        ForLoopEpilog:
+                        m_resultType2 = awaiterType2.GetResult();
+                        m_x++;
+
+                        ForLoopBody:
+                        if (m_x < 3) {
+                            awaiterType2 = Method2Async().GetAwaiter();
+                            if (!awaiterType2.IsCompleted) {
+                                m_state = 1;
+                                m_awaiterType2 = awaiterType2;
+
+                                m_builder.AwaitUnsafeOnCompleted(ref awaiterType2, ref this);
+                                executeFinally = false;
+                                return;
+                            }
+                            goto ForLoopEpilog;
+                        }
+
+                    } catch (Exception) {
+                        Console.WriteLine("Catch");
+                    } finally {
+                        // 离开了原始代码的 try 块，就执行这里的 finally
+                        if (executeFinally) {
+                            Console.WriteLine("Finally");
+                        }
+                    }
+                } catch (Exception ex) {
+                    // 未处理的异常：通过设置异常来完成状态机的 Task
+                    m_builder.SetException(ex);
+                    return;
+                }
+                m_builder.SetResult(result);
+            }
+
+            void IAsyncStateMachine.SetStateMachine(IAsyncStateMachine stateMachine) => throw new NotImplementedException();
+        }
+
+        #endregion
+
     }
+
 }

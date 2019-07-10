@@ -37,10 +37,9 @@ namespace KsViTd {
     class Program {
 
 
-        static Kv<int, int> Kv = new Kv<int, int>(3, 4);
 
         static void Main(string[] args) {
-            var tester = new DoXmIg().Parallel2();
+            var tester = new DoXmIg().Timer2();
 
             //new FjUe();
             //new Linq();
@@ -169,25 +168,6 @@ namespace KsViTd {
 
         }
 
-        #region Struct
-        static void StructTest1() {
-            var arr = new[] {
-                new Kv<int,int>(10,20),
-                new Kv<int, int>(11, 21),
-                new Kv<int, int>(12, 22),
-            };
-
-            var item = new Kv<int, int>(100, 200);
-
-            arr[1] = item;
-
-            return;
-        }
-
-
-
-
-        #endregion
 
         #region Class
         class C1 {
