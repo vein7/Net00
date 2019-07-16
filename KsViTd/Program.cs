@@ -39,7 +39,7 @@ namespace KsViTd {
 
 
         static void Main(string[] args) {
-            var tester = new DoXmIg().Timer2();
+            var tester = new DoXmIg().Parallel4();
 
             //new FjUe();
             //new Linq();

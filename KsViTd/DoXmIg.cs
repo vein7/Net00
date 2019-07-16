@@ -7,6 +7,7 @@ using System.Threading;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
+using System.Collections.Concurrent;
 
 namespace KsViTd {
     class DoXmIg {
@@ -454,6 +455,25 @@ namespace KsViTd {
             return this;
         }
 
+        public DoXmIg Parallel4() {
+            Console.WriteLine("==========");
+            var arr = new List<int>();
+            Parallel.ForEach(Enumerable.Range(1, 10_000_000), () => 0,
+                (i, state, sum) => {
+                    return sum + (i / 2 == 0 ? 1 : 3);
+                }, (sum) => {
+                    arr.Add(sum);
+                });
+            Console.WriteLine("==========");
+            Console.WriteLine($"{arr.Count}, {arr.Sum()}");
+            var sum2 = 0;
+            for (var i = 0;i <= 10_000_000; i++) {
+                sum2 += i / 2 == 0 ? 1 : 3;
+            }
+            Console.WriteLine(sum2);
+            System.Collections.Concurrent.ConcurrentBag<int> ls;
+            return this;
+        }
         #endregion
 
         public DoXmIg Timer1() {
@@ -607,6 +627,13 @@ namespace KsViTd {
 
         #endregion
 
+        public static async Task T1() {
+            
+        }
+
+        class ThreadSharingData {
+
+        }
     }
 
 }

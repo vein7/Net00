@@ -9,9 +9,9 @@ namespace KsViTd {
     class CsLang {
         public CsLang() {
             //TestDynamic();
-            
+
             var a = new XYZ(3);
-            
+
         }
 
         public CsLang TestDynamic() {
@@ -23,8 +23,8 @@ namespace KsViTd {
             };
 
             Console.WriteLine(sizeof(int));
-            foreach(var d in ls) {
-                Console.WriteLine($"{d.Name}\t{d.Dnm1.ToString()}\t{d.Dnm1.GetType()}" );
+            foreach (var d in ls) {
+                Console.WriteLine($"{d.Name}\t{d.Dnm1.ToString()}\t{d.Dnm1.GetType()}");
             }
 
             string a = "";
@@ -51,13 +51,13 @@ namespace KsViTd {
         public void F1(out object obj) {
             obj = new List<int>();
         }
-        
+
         public void FunTest() {
             Func<object, object> f;
             Func<string, string> f2 = (string s) => s;
             f = (obj) => f2(obj as string);        //obj 不一定是string 类型
-            
-            foreach(Func<object,object>  fn in f.GetInvocationList()) {
+
+            foreach (Func<object, object> fn in f.GetInvocationList()) {
 
             }
 
@@ -75,8 +75,8 @@ namespace KsViTd {
             public string Name;
             public dynamic Dnm1;        // object 变量
         }
-        
-        class FnList: IEnumerable<Func<string>> {
+
+        class FnList : IEnumerable<Func<string>> {
             List<Func<string>> ls = new List<Func<string>>();
             public IEnumerator<Func<string>> GetEnumerator() {
                 return ls.GetEnumerator();
@@ -153,7 +153,7 @@ namespace KsViTd {
             }
         }
 
-        class CB: CA, ICloneable<CB> {
+        class CB : CA, ICloneable<CB> {
             public CB Clone() {
                 throw new NotImplementedException();
             }
@@ -167,7 +167,59 @@ namespace KsViTd {
 
         }
 
-
     }
 
+    #region 枚举
+    public enum Received {
+        /// <summary>
+        /// 发放中
+        /// </summary>
+        SENDING,
+        /// <summary>
+        /// 已发放待领取
+        /// </summary>
+        SENT,
+        /// <summary>
+        /// 发放失败
+        /// </summary>
+        FAILED,
+        /// <summary>
+        /// 已领取
+        /// </summary>
+        RECEIVED,
+        /// <summary>
+        /// 退款中
+        /// </summary>
+        RFUND_ING,
+        /// <summary>
+        /// 已退款
+        /// </summary>
+        REFUND,
+    }
+
+    public static class EnumEF {
+        public static string ToDescription(this Received r) {
+            return EnumEF<Received>.Descriptions[(int)r];
+        }
+
+        public static string ToDescription<E>(this int e) {
+            return EnumEF<Received>.Descriptions[e];
+        }
+
+        public static void Test() {
+            (EnumEF<Received>.Descriptions as string[])[1] = "ss";
+            
+        }
+    }
+    public static class EnumEF<T> {
+        public static readonly IReadOnlyList<string> Descriptions;
+        static EnumEF() {
+            EnumEF<Received>.Descriptions = new[] {
+                "发放中", "已发放待领取", "发放失败", "已领取", "退款中", "已退款"
+            };
+            
+        }
+    }
+
+    #endregion
 }
