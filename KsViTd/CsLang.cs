@@ -202,12 +202,13 @@ namespace KsViTd {
             return EnumEF<Received>.Descriptions[(int)r];
         }
 
-        public static string ToDescription<E>(this int e) {
-            return EnumEF<Received>.Descriptions[e];
+        public static string ToDescription<E>(this E e) where E: Enum {
+            return EnumEF<E>.Descriptions[e.GetHashCode()];     //  不支持强制转换。。。
         }
 
         public static void Test() {
-            (EnumEF<Received>.Descriptions as string[])[1] = "ss";
+            (EnumEF<Received>.Descriptions as string[])[1] = "已发放待领取2";
+            Console.WriteLine(DayOfWeek.Sunday.ToDescription());
             
         }
     }
@@ -217,7 +218,9 @@ namespace KsViTd {
             EnumEF<Received>.Descriptions = new[] {
                 "发放中", "已发放待领取", "发放失败", "已领取", "退款中", "已退款"
             };
-            
+            EnumEF<DayOfWeek>.Descriptions = new[] {
+                "星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六",
+            };
         }
     }
 
