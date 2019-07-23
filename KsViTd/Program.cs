@@ -39,7 +39,8 @@ namespace KsViTd {
 
 
         static void Main(string[] args) {
-            var tester = new DoXmIg().Parallel4();
+            //var tester = new DoXmIg().Parallel4();
+            EnumEF.Test();
 
             //new FjUe();
             //new Linq();
@@ -54,7 +55,7 @@ namespace KsViTd {
 
             //Primitive<int>.TryParse("333", out var intA);
             //Primitive<long>.TryParse("333", out var longB);
-            
+
 
             //new LTest().Test2();
             Console.ReadKey();
