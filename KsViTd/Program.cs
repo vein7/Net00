@@ -40,7 +40,8 @@ namespace KsViTd {
 
         static void Main(string[] args) {
             //var tester = new DoXmIg().Parallel4();
-            EnumEF.Test();
+            DoXmIg.Task11();
+            //EnumEF.Test();
 
             //new FjUe();
             //new Linq();

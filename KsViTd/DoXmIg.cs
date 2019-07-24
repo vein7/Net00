@@ -575,7 +575,6 @@ namespace KsViTd {
                             break;
                         case 0:     // 原始代码以异步的方式完成了
                             awaiterType1 = m_awaiterType1;      // 恢复最新的 awaiter
-                            // ? 这里为什么要赋值，直接使用 ref awaiterType1，不是有值了吗，或者可以直接使用类成员
                             break;
                         case 1:
                             awaiterType2 = m_awaiterType2;
@@ -614,6 +613,7 @@ namespace KsViTd {
                             Console.WriteLine("Finally");
                         }
                     }
+                    result = "Done";
                 } catch (Exception ex) {
                     // 未处理的异常：通过设置异常来完成状态机的 Task
                     m_builder.SetException(ex);
@@ -627,8 +627,23 @@ namespace KsViTd {
 
         #endregion
 
-        public static async Task T1() {
-            
+        public static async Task Task11() {
+            var num = 0;
+
+            Action act = async () => {
+                Console.WriteLine($"act id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
+                await Task.Delay(500);
+                Console.WriteLine($"act await id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
+                num = 3;
+            };
+
+            Console.WriteLine($"fn id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
+            await Task.Run(act);
+            Console.WriteLine($"fn2 id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
+            Console.WriteLine(num);
+            // 把 act 的类型改为 Func<Task>，这是这个函数的实际类型，act 实际上返回的是Task，
+            // 但是在 await Task.Run(act) 的时候，act 已经执行完毕，并返回一个 Task，应该是被包了一层，没有进行 await
+
         }
 
         class ThreadSharingData {
