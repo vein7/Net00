@@ -40,14 +40,14 @@ namespace KsViTd {
 
         static void Main(string[] args) {
             //var tester = new DoXmIg().Parallel4();
-            DoXmIg.Task11();
+            //DoXmIg.Task11();
             //EnumEF.Test();
 
             //new FjUe();
             //new Linq();
             //StructTest1();
             //Test();
-            //new CsLang().TestException1();
+            new CsLang().FnBiBc1();
             //new DynamicTest().Test();
             //var a = IEnumTest();
 

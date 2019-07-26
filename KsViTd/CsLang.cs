@@ -198,31 +198,35 @@ namespace KsViTd {
     }
 
     public static class EnumEF {
-        public static string ToDescription(this Received r) {
-            return EnumEF<Received>.Descriptions[(int)r];
+        static class EnumEF_<T> {
+            public static IReadOnlyList<string> Descriptions;
         }
-
-        public static string ToDescription<E>(this E e) where E: Enum {
-            return EnumEF<E>.Descriptions[e.GetHashCode()];     //  不支持强制转换。。。
-        }
-
-        public static void Test() {
-            (EnumEF<Received>.Descriptions as string[])[1] = "已发放待领取2";
-            Console.WriteLine(DayOfWeek.Sunday.ToDescription());
-            
-        }
-    }
-    public static class EnumEF<T> {
-        public static readonly IReadOnlyList<string> Descriptions;
         static EnumEF() {
-            EnumEF<Received>.Descriptions = new[] {
+            EnumEF_<Received>.Descriptions = new[] {
                 "发放中", "已发放待领取", "发放失败", "已领取", "退款中", "已退款"
             };
-            EnumEF<DayOfWeek>.Descriptions = new[] {
+            EnumEF_<DayOfWeek>.Descriptions = new[] {
                 "星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六",
             };
         }
+
+        public static string ToDescription(this Received r) {
+            return EnumEF_<Received>.Descriptions[(int)r];
+        }
+
+        public static string ToDescription<E>(this E e) where E : Enum {
+            return EnumEF_<E>.Descriptions[e.GetHashCode()];     //  不支持强制转换。。。
+        }
+
+        public static void Test() {
+            (EnumEF_<Received>.Descriptions as string[])[1] = "已发放待领取2";
+            Console.WriteLine(DayOfWeek.Sunday.ToDescription());
+            Console.WriteLine(Received.SENDING.ToDescription());
+
+        }
+
     }
+
 
     #endregion
 }
