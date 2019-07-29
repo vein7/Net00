@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="BiBc.cs" />
     <Compile Include="CStatic.cs" />
+    <Compile Include="Iterator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

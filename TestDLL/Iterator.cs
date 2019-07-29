@@ -5,11 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TestDLL {
-    public static class CStatic {
-        static readonly int Count = 100;
-
-        static int SFn1() {
-            return 100 + Count;
+    class Iterator {
+        public IEnumerable<int> Test1() {
+            yield return 1;
         }
     }
 }

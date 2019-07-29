@@ -68,13 +68,34 @@ namespace TestDLL {
 
 
         public void For1() {
-            int outside = 0;
+            int x = 0;
             var ls = new Func<int>[2];
             for (int i = 0; i < 2; i++) {
                 int inside = 0;
-                ls[i] = () => outside + inside;
+                ls[i] = () => x + inside;
             }
 
+            // 两个匿名函数，outside 引用是两个匿名函数的同一个引用，inside 是两个匿名函数不同的引用，
+            // 生成了两个类，其中一个类（C1）只捕获了 outside，另一个类（C2）捕获了 inside，
+            // 进入方法会 new 一个 C1，每次 for 里面会 new C2
+        }
+
+        public void GsXlBmLl2() {
+            var ls = new Func<int>[3];
+            int x = 0;
+            {
+                int y = 10;
+                ls[0] = () => x + y;
+            }
+            {
+                int y = 100;
+                ls[1] = () => x + y;
+            }
+            {
+                int z = 100;
+                ls[2] = () => x + z;
+            }
+            // 生成了四个类
         }
 
     }
