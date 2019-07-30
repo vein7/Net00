@@ -54,9 +54,6 @@ namespace KsViTd {
             //没什么
             //KsViTd.Excel.ExcelWriter.Test();
 
-            //Primitive<int>.TryParse("333", out var intA);
-            //Primitive<long>.TryParse("333", out var longB);
-
 
             //new LTest().Test2();
             Console.ReadKey();

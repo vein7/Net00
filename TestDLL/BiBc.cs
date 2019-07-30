@@ -16,7 +16,7 @@ namespace TestDLL {
             return (n) => num + n;
 
             // num 没有分配在函数栈上，编译器会为匿名函数生成一个类，num 是该类的一个 field
-            // 该类嵌入在在当前类中，如：TestDLL.BiBc/'<>c__DisplayClass6_0'::'<JuBuBmLl>b__0'
+            // 该类嵌入在在当前类中，如：TestDLL.BiBc/'<>c__DisplayClass6_0'
             // 函数开始执行时， newobj    instance void TestDLL.BiBc/'<>c__DisplayClass6_0'::.ctor()
         }
 
@@ -75,8 +75,8 @@ namespace TestDLL {
                 ls[i] = () => x + inside;
             }
 
-            // 两个匿名函数，outside 引用是两个匿名函数的同一个引用，inside 是两个匿名函数不同的引用，
-            // 生成了两个类，其中一个类（C1）只捕获了 outside，另一个类（C2）捕获了 inside，
+            // 两个匿名函数，x 引用是两个匿名函数的同一个引用，inside 是两个匿名函数不同的引用，
+            // 生成了两个类，其中一个类（C1）只捕获了 x，另一个类（C2）捕获了 inside，
             // 进入方法会 new 一个 C1，每次 for 里面会 new C2
         }
 
