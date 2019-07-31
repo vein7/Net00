@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 
 namespace KsViTd {
     class CsLang {
+        static class CStatic {
+            static CStatic() {
+                Console.WriteLine("static CStatic");
+            }
+        }
+
         public CsLang() {
             //TestDynamic();
 

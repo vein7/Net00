@@ -47,7 +47,6 @@ namespace KsViTd {
             //new Linq();
             //StructTest1();
             //Test();
-            //new CsLang().FnBiBc1();
             //new DynamicTest().Test();
             //var a = IEnumTest();
 

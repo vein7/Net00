@@ -11,5 +11,9 @@ namespace TestDLL {
         static int SFn1() {
             return 100 + Count;
         }
+        static dynamic SFn2() {
+            var obj1 = new { A = 3, B = 3, C = 4 };
+            return new { A = 3, B = 4 };
+        }
     }
 }
