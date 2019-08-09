@@ -76,7 +76,7 @@ namespace KsViTd {
 
         public Func<T, T2, Tr> Fn<T, T2, Tr>(Func<T, T2, Tr> fn) => fn;
 
-
+        
         class Dnm {
             public string Name;
             public dynamic Dnm1;        // object 变量

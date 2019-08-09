@@ -98,5 +98,13 @@ namespace TestDLL {
             // 生成了四个类
         }
 
+        public Func<int> CjUu(int a, ref int b) {
+            // Func<int> fn1 = () => a + b;     // 不能捕获 ref
+            Func<int> fn2 = () => a + 10;
+            return fn2;
+
+            // int LocatFn() => a + b;          // 本地函数也不能使用
+        }
+
     }
 }

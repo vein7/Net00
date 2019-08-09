@@ -8,6 +8,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using System.Collections.Concurrent;
+using System.Net.Http;
 
 namespace KsViTd {
     class DoXmIg {
@@ -467,7 +468,7 @@ namespace KsViTd {
             Console.WriteLine("==========");
             Console.WriteLine($"{arr.Count}, {arr.Sum()}");
             var sum2 = 0;
-            for (var i = 0;i <= 10_000_000; i++) {
+            for (var i = 0; i <= 10_000_000; i++) {
                 sum2 += i / 2 == 0 ? 1 : 3;
             }
             Console.WriteLine(sum2);
@@ -551,7 +552,7 @@ namespace KsViTd {
 
                 // 编译器插入 try 块来确保状态机的任务完成，很有可能程序员编写的代码抛出异常，
                 try {
-                    bool executeFinally = true;     
+                    bool executeFinally = true;
                     if (m_state == -1) { m_local = m_argument; }
 
                     // 开始插入程序员编写的原始代码
@@ -646,9 +647,129 @@ namespace KsViTd {
 
         }
 
+        #region Lock
         class ThreadSharingData {
+            int value;
+            int flag;
+            void Thread1() {
+                value = 3;
+                //flag = 1;
+                // 在 flag 写入之前，之前的值必须先写入
+                Volatile.Write(ref flag, 1);
+            }
+
+            void Thread2() {
+                // flag 读取之后，之后的值才读取出来
+                if (Volatile.Read(ref flag) == 1) {
+                    Console.WriteLine(value);
+                }
+            }
+        }
+
+        class MultiWebRequests {
+            AsyncCoordinator ac = new AsyncCoordinator();
+            Dictionary<string, object> servers = new Dictionary<string, object> {
+                {"http://Microsoft.com", null },
+                {"http://bing.com", null },
+                {"http://baidu.com", null },
+            };
+
+            public MultiWebRequests(int timeout = Timeout.Infinite) {
+                var httpClient = new HttpClient();
+                foreach (var url in servers.Keys) {
+                    ac.AboutToBegin(1);
+                    httpClient.GetByteArrayAsync(url)
+                        .ContinueWith(t => ComputeResult(url, t));
+                }
+                ac.AllBegun(AllDone, timeout);
+            }
+
+            private void ComputeResult(string url, Task<byte[]> task) {
+                object result;
+                if (task.Exception != null) {
+                    result = task.Exception.InnerException;
+                } else {
+                    // 在线程池线程处理I/O
+                    // 在此处理数据
+                    result = task.Result.Length;
+                }
+                servers[url] = result;
+                ac.JustEnded();
+            }
+
+            public void Cancel() => ac.Cancel();
+
+            private void AllDone(CoordinationStatus status) {
+                switch (status) {
+                case CoordinationStatus.Cancel:
+                    Console.WriteLine("Cancel");
+                    break;
+                case CoordinationStatus.Timeout:
+                    Console.WriteLine("Timeout");
+                    break;
+                case CoordinationStatus.AllDone:
+                    Console.WriteLine("All Done");
+                    foreach (var server in servers) {
+                        Console.Write($"{server.Key} ");
+                        if (server.Value is Exception ex) {
+                            Console.WriteLine($"failed due to {ex.GetType().Name}.");
+                        } else {
+                            Console.WriteLine($"returned {server.Value:N0} byte");
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        class AsyncCoordinator {
+            int opCount = 1;        // 内部初始为 1，AllBegun方法内部减 1
+            int statusReported;
+            Action<CoordinationStatus> callback;
+            Timer timer;
+
+            // 在进行操作之前调用
+            public void AboutToBegin(int opsToAdd) {
+                Interlocked.Add(ref opCount, opsToAdd);
+            }
+
+            // 处理好一个操作之后调用
+            public void JustEnded() {
+                if (Interlocked.Decrement(ref opCount) == 0) {
+                    ReportStatus(CoordinationStatus.AllDone);
+                }
+            }
+
+            private void ReportStatus(CoordinationStatus status) {
+                if (statusReported == 1) { return; }
+                if (Interlocked.Exchange(ref statusReported, 1) == 0) {
+                    callback?.Invoke(status);
+                }
+            }
+            private void ReportStatus2(CoordinationStatus status) {
+                if (statusReported == 1) { return; }
+                Interlocked.Exchange(ref statusReported, 1);
+                callback?.Invoke(status);
+            }
+
+            // 必须在所有操作之后调用
+            public void AllBegun(Action<CoordinationStatus> callback, int timeout = Timeout.Infinite) {
+                this.callback = callback;
+                if (timeout != Timeout.Infinite) {
+                    this.timer = new Timer(TimeExpired, null, timeout, Timeout.Infinite);
+                }
+                JustEnded();
+            }
+
+            private void TimeExpired(object obj) => ReportStatus(CoordinationStatus.Timeout);
+
+            public void Cancel() => ReportStatus(CoordinationStatus.Cancel);
 
         }
+        enum CoordinationStatus {
+            Cancel, Timeout, AllDone
+        }
+
+        #endregion
     }
 
 }

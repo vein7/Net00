@@ -35,9 +35,7 @@ namespace KsViTd {
     //}
 
     class Program {
-
-
-
+        
         static void Main(string[] args) {
             //var tester = new DoXmIg().Parallel4();
             //DoXmIg.Task11();
@@ -52,7 +50,6 @@ namespace KsViTd {
 
             //没什么
             //KsViTd.Excel.ExcelWriter.Test();
-
 
             //new LTest().Test2();
             Console.ReadKey();
