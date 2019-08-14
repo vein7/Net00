@@ -62,6 +62,7 @@
     <Compile Include="Excel\Import.cs" />
     <Compile Include="FilterQurey.cs" />
     <Compile Include="FjUe.cs" />
+    <Compile Include="GC.cs" />
     <Compile Include="Linq.cs" />
     <Compile Include="LqTest.cs" />
     <Compile Include="Program.cs" />

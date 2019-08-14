@@ -228,7 +228,7 @@ namespace KsViTd {
             (EnumEF_<Received>.Descriptions as string[])[1] = "已发放待领取2";
             Console.WriteLine(DayOfWeek.Sunday.ToDescription());
             Console.WriteLine(Received.SENDING.ToDescription());
-
+            
         }
 
     }

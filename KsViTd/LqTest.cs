@@ -17,6 +17,8 @@ namespace KsViTd {
     }
     class LqTest {
         public LqTest() {
+            var file = new FileStream(@"D:\Test\stream.txt", FileMode.Open);
+            
             var writer = new StreamWriter("E:/fileName.txt");
             writer.Write("dddd");
             writer.Dispose();

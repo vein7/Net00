@@ -468,7 +468,7 @@ namespace KsViTd {
             Console.WriteLine("==========");
             Console.WriteLine($"{arr.Count}, {arr.Sum()}");
             var sum2 = 0;
-            for (var i = 0; i <= 10_000_000; i++) {
+            for (var i = 1; i <= 10_000_000; i++) {
                 sum2 += i / 2 == 0 ? 1 : 3;
             }
             Console.WriteLine(sum2);
@@ -647,7 +647,29 @@ namespace KsViTd {
 
         }
 
+        public static void TaskWhenAll() {
+            var tasks = Task.WhenAll(new[] {
+                Task.Run(()=>{
+                    Task.Delay(1000).Wait();
+                    Console.WriteLine("11111111");
+                }),
+                Task.Run(()=>{
+                    Task.Delay(200).Wait();
+                    Console.WriteLine("2222222222");
+                }),
+                new Task(()=>{
+                    Task.Delay(300).Wait();
+                    Console.WriteLine("3333333");
+                }),
+            });
+            tasks.ContinueWith(t => {
+                Console.WriteLine("都完成了");
+            });
+            Console.WriteLine("TaskWhenAll end");
+        }
+
         #region Lock
+
         class ThreadSharingData {
             int value;
             int flag;
@@ -723,7 +745,7 @@ namespace KsViTd {
         }
         class AsyncCoordinator {
             int opCount = 1;        // 内部初始为 1，AllBegun方法内部减 1
-            int statusReported;
+            int statusReported;     // 作为 bool 变量使用，因为 Interlocked.Exchange 没有 bool 的重载
             Action<CoordinationStatus> callback;
             Timer timer;
 
@@ -740,13 +762,12 @@ namespace KsViTd {
             }
 
             private void ReportStatus(CoordinationStatus status) {
-                if (statusReported == 1) { return; }
                 if (Interlocked.Exchange(ref statusReported, 1) == 0) {
-                    callback?.Invoke(status);
+                    callback?.Invoke(status);       //仅仅调用一次回调
                 }
             }
             private void ReportStatus2(CoordinationStatus status) {
-                if (statusReported == 1) { return; }
+                if (statusReported == 1) { return; }        // 这么写是有问题的，当 statusReported == 0，两个线程可以同时执行后面的代码，疑问中？待确定
                 Interlocked.Exchange(ref statusReported, 1);
                 callback?.Invoke(status);
             }
@@ -768,6 +789,7 @@ namespace KsViTd {
         enum CoordinationStatus {
             Cancel, Timeout, AllDone
         }
+
 
         #endregion
     }
