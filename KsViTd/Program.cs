@@ -38,9 +38,10 @@ namespace KsViTd {
         
         static void Main(string[] args) {
             //var tester = new DoXmIg().Parallel4();
-            DoXmIg.TaskWhenAll();
+            //DoXmIg.TaskWhenAll();
             //EnumEF.Test();
 
+            CsLang.TestInterface();
             //new FjUe();
             //new Linq();
             //StructTest1();
@@ -61,7 +62,6 @@ namespace KsViTd {
             //var fil = new Filter<StatisticalBase>();
             //var rep= new DReport().SqlQurey(fil);
 
-            //new CsLang();
 
             C2 objC2 = "33";
             objC2 = "44";

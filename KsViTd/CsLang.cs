@@ -76,7 +76,7 @@ namespace KsViTd {
 
         public Func<T, T2, Tr> Fn<T, T2, Tr>(Func<T, T2, Tr> fn) => fn;
 
-        
+
         class Dnm {
             public string Name;
             public dynamic Dnm1;        // object 变量
@@ -173,6 +173,31 @@ namespace KsViTd {
 
         }
 
+        #region Interface
+
+        public static void TestInterface() {
+            new ClientA2().Test1();
+        }
+
+        class ClientA : IDisposable {
+            public virtual void Dispose() => Console.WriteLine("ClientA Dispose");
+            public virtual void Dispose(bool isDisposing) => Console.WriteLine("ClientA isDisposing: " + isDisposing);
+
+        }
+
+        class ClientA2 : ClientA {
+            public void Dispose() => Console.WriteLine("ClientA2 Dispose");
+
+            public void Test1() {
+                ((IDisposable)this).Dispose();
+                this.Dispose();
+            }
+
+            public override void Dispose(bool isDisposing) => Console.WriteLine("ClientB isDisposing: " + isDisposing);
+        }
+
+        #endregion
+
     }
 
     #region 枚举
@@ -228,7 +253,7 @@ namespace KsViTd {
             (EnumEF_<Received>.Descriptions as string[])[1] = "已发放待领取2";
             Console.WriteLine(DayOfWeek.Sunday.ToDescription());
             Console.WriteLine(Received.SENDING.ToDescription());
-            
+
         }
 
     }
