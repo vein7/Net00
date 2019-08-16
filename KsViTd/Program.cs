@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -41,6 +42,8 @@ namespace KsViTd {
             //DoXmIg.TaskWhenAll();
             //EnumEF.Test();
 
+            //Stopwatch.StartNew
+            Debug.WriteLine("SomeText");
             CsLang.TestInterface();
             //new FjUe();
             //new Linq();

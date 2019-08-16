@@ -9,7 +9,8 @@ namespace KsViTd {
     class GCTest {
 
         public static void Test1() {
-            
+            //System.Data.Common.DbConnection conn = null;
+            //conn.CreateCommand().ExecuteNonQueryAsync();
         }
 
 

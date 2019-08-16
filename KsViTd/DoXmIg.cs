@@ -669,6 +669,7 @@ namespace KsViTd {
         }
 
         #region Lock
+        // 来自 《CLR via C#》，29，30
 
         class ThreadSharingData {
             int value;
@@ -789,6 +790,24 @@ namespace KsViTd {
         enum CoordinationStatus {
             Cancel, Timeout, AllDone
         }
+
+        // 乐观并发模式创建一个原子 Maximum
+        public static int Maximum(ref int target, int value) {
+            int currentVal = target, startVal, desiredVal;
+
+            do {
+                startVal = currentVal;
+                desiredVal = Math.Max(startVal, value);
+
+                // 不是原子性的
+                if (target == startVal) target = desiredVal;
+
+                currentVal = Interlocked.CompareExchange(ref target, desiredVal, startVal);
+            } while (startVal != currentVal);
+
+            return desiredVal;
+        }
+
 
 
         #endregion

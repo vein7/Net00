@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,44 +10,10 @@ namespace KsViTd {
 
         public Linq() {
             //GetEnumerator();
-            TestToArray();
             
 
-                //foreach(var i in this) {
-            //    Console.WriteLine(i);
-            //}
         }
-
-
-        #region 迭代器
-
-        /// <summary>
-        /// 在 foreach 进行枚举的时候, 走进迭代器里面的代码, 
-        /// 在 yield return 的时候返回元素到 foreach, 
-        /// 下一次迭代的时候, 继续执行迭代器里面的代码
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator<int> GetEnumerator() {
-            Console.WriteLine("开始了吗");
-            yield return 1;
-            yield return 2;
-            if(DateTime.Now.Day / 2 == 0) yield break;
-            yield return 3;
-            yield return 4;
-            Console.WriteLine("是结束了"); 
-        }
-
-
-        #endregion
-
-        public Linq TestToArray() {
-            var arr = new[] { 1, 2, 3, 4 };
-            var arr2 = arr.Where(i => i > 2).ToArray();     //值类型 ToArray 的时候, 数组指向的不是原来的数组了
-            
-
-            return this;
-        }
-
+        
         public Linq VlUiVe() {
             var arr = new[] { 1, 2, 3, 4 };
             arr.Where0(i => i > 2)
@@ -55,6 +22,20 @@ namespace KsViTd {
             return this;
         }
 
+        class Itor : IEnumerable<int> {
+
+            public void Test() {
+                foreach(var i in this) {
+
+                }
+            }
+
+            public IEnumerator<int> GetEnumerator() {
+                yield return 1;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
+        }
     }
 
     class LTest {
