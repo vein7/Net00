@@ -808,6 +808,135 @@ namespace KsViTd {
             return desiredVal;
         }
 
+        class SomeCalss1 : IDisposable {
+            readonly Mutex mutex = new Mutex();
+
+            public void Method1() {
+                mutex.WaitOne();
+                // do something
+                Method2();          // Method2 递归获取锁
+                mutex.ReleaseMutex();
+            }
+
+            public void Method2() {
+                mutex.WaitOne();
+                // do something
+                mutex.ReleaseMutex();
+            }
+
+            public void Dispose() => mutex.Dispose();
+        }
+
+        sealed class RecursiveAutoResetEvent : IDisposable {
+            AutoResetEvent arLock = new AutoResetEvent(true);
+            int owningThreadId = 0;
+            int recursionCount = 0;
+
+            public void Enter() {
+                // 获取调用线程的唯一Id
+                int id = Thread.CurrentThread.ManagedThreadId;
+                // 调用线程拥有锁，增加递归计数
+                if (owningThreadId == id) {
+                    recursionCount++;
+                    return;
+                }
+                // 调用线程不拥有锁，等待它
+                arLock.WaitOne();
+                // 调用线程现在才拥有锁，初始化计数
+                owningThreadId = id;
+                recursionCount = 1;
+            }
+
+            public void Leave() {
+                // 调用线程不拥有锁，报错
+                if (owningThreadId != Thread.CurrentThread.ManagedThreadId) {
+                    throw new InvalidOperationException();
+                }
+
+                if (--recursionCount == 0) {
+                    owningThreadId = 0;     // 表明没有线程占用锁，清零
+                    arLock.Set();           // 唤醒一个正在等待的线程（如果有）
+                }
+            }
+
+            public void Dispose() => arLock.Dispose();
+        }
+
+        sealed class SimpleHybridLock : IDisposable {
+            // 由基元用户模式构造（Interlocked 的方法）使用
+            int waiters = 0;
+            // AutoResetEvent 是基元内核模式构造
+            AutoResetEvent evLock = new AutoResetEvent(false);
+
+            public void Enter() {
+                if (Interlocked.Increment(ref waiters) == 1) { return; }
+
+                // 发生竞争，这个线程等待
+                evLock.WaitOne();       // 这里产生较大的性能影响
+                // WaitOne 返回后，这个线程拿到了锁
+            }
+
+            public void Leave() {
+                if (Interlocked.Decrement(ref waiters) <= 0) { return; }
+
+                // 有其他线程正在阻塞，唤醒其中一个
+                evLock.Set();   // 这里产生较大的性能影响
+            }
+
+            public void Dispose() => evLock.Dispose();
+        }
+
+        sealed class AnotherHybridLock : IDisposable {
+            int waiters = 0;    // 由基元用户模式构造（Interlocked 的方法）使用
+            AutoResetEvent evLock = new AutoResetEvent(false);      // AutoResetEvent 是基元内核模式构造
+            int spinCount = 4000;
+            int owningThreadId = 0;
+            int recursion = 0;
+
+
+            public void Enter() {
+                int id = Thread.CurrentThread.ManagedThreadId;
+                // 调用线程已经拥有锁，增加递归计数
+                if (id == owningThreadId) { owningThreadId++; return; }
+
+                // 调用线程不拥有锁
+                var spin = new SpinWait();
+                for (int i = 0; i < spinCount; i++) {
+                    // 自旋过程中，锁没有被占用，这个线程就获得锁
+                    if (Interlocked.CompareExchange(ref waiters, 1, 0) == 0) { goto GotLock; }
+                    spin.SpinOnce();    // 黑科技：给其他线程运行的机会，希望锁会被释放
+                }
+
+                // 自旋结束，锁仍未获得，再试一次
+                if (Interlocked.Increment(ref waiters) > 1) {
+                    // 仍然是竞态条件，阻塞这个线程
+                    evLock.WaitOne();   // 等待锁，性能有损失
+                    // 线程醒来时，这个线程获取锁
+                }
+
+                GotLock:
+                owningThreadId = id;    // 重置
+                recursion = 1;
+            }
+
+            public void Leave() {
+                int id = Thread.CurrentThread.ManagedThreadId;
+                if (id != owningThreadId) {
+                    throw new SynchronizationLockException("Lock not owned by calling thread");
+                }
+
+                // 这个线程可能存在递归计数
+                if (--recursion > 0) { return; }
+
+                owningThreadId = 0;     // 现在没有线程拥有锁
+                if (Interlocked.Decrement(ref waiters) == 0) { return; }
+
+                // 有其他线程在等待，唤醒一个
+                evLock.Set();   //这里有较大的性能损失
+            }
+
+            public void Dispose() => evLock.Dispose();
+        }
 
 
         #endregion
