@@ -827,7 +827,7 @@ namespace KsViTd {
             public void Dispose() => mutex.Dispose();
         }
 
-        sealed class RecursiveAutoResetEvent : IDisposable {
+        public sealed class RecursiveAutoResetEvent : IDisposable {
             AutoResetEvent arLock = new AutoResetEvent(true);
             int owningThreadId = 0;
             int recursionCount = 0;
@@ -862,7 +862,7 @@ namespace KsViTd {
             public void Dispose() => arLock.Dispose();
         }
 
-        sealed class SimpleHybridLock : IDisposable {
+        public sealed class SimpleHybridLock : IDisposable {
             // 由基元用户模式构造（Interlocked 的方法）使用
             int waiters = 0;
             // AutoResetEvent 是基元内核模式构造
@@ -886,7 +886,7 @@ namespace KsViTd {
             public void Dispose() => evLock.Dispose();
         }
 
-        sealed class AnotherHybridLock : IDisposable {
+        public sealed class AnotherHybridLock : IDisposable {
             int waiters = 0;    // 由基元用户模式构造（Interlocked 的方法）使用
             AutoResetEvent evLock = new AutoResetEvent(false);      // AutoResetEvent 是基元内核模式构造
             int spinCount = 4000;
@@ -937,7 +937,62 @@ namespace KsViTd {
 
             public void Dispose() => evLock.Dispose();
         }
+        
+        public sealed class Transaction : IDisposable {
+            readonly ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
+            DateTime timeOfLastTrans;
 
+            public void PerformTransaction(int sleep) {
+                rwLock.EnterWriteLock();
+                Thread.Sleep(sleep);
+                timeOfLastTrans = DateTime.Now;
+                Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId})write: {timeOfLastTrans}");
+                rwLock.ExitWriteLock();
+            }
+
+            public DateTime LastTransaction {
+                get {
+                    Thread.Sleep(1000);
+                    rwLock.EnterReadLock();
+                    var val = timeOfLastTrans;
+                    Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId})read: {timeOfLastTrans}");
+                    rwLock.ExitReadLock();
+                    return val;
+                }
+            }
+
+            public static void Test1() {
+                using (var tran = new Transaction()) {
+                    Console.WriteLine($"{DateTime.Now.ToLongTimeString()}");
+
+                    Action readInfo = () => Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}){DateTime.Now.ToLongTimeString()} -- {tran.LastTransaction}");
+
+                    Parallel.Invoke(
+                        () => tran.PerformTransaction(3000),
+                        () => tran.PerformTransaction(2000),
+                        () => tran.PerformTransaction(3000),
+                        readInfo, readInfo, readInfo
+                    );
+                }
+            }
+
+            public static void Test2() {
+                using (var tran = new Transaction()) {
+                    Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}){DateTime.Now.ToLongTimeString()}");
+                    Action readInfo = () => Console.WriteLine($"({Thread.CurrentThread.ManagedThreadId}){DateTime.Now.ToLongTimeString()} -- {tran.LastTransaction}");
+                    tran.PerformTransaction(1000);
+                    readInfo();
+                    Task.Run(readInfo);
+                    Task.Run(readInfo);
+                    Task.Run(() => tran.PerformTransaction(4000));
+                    Task.Run(readInfo);
+                    readInfo();
+                }
+            }
+
+            public void Dispose() => rwLock.Dispose();
+        }
+        
 
         #endregion
     }

@@ -39,12 +39,12 @@ namespace KsViTd {
         
         static void Main(string[] args) {
             //var tester = new DoXmIg().Parallel4();
-            //DoXmIg.TaskWhenAll();
+            DoXmIg.Transaction.Test2();
             //EnumEF.Test();
-
             //Stopwatch.StartNew
+            
             Debug.WriteLine("SomeText");
-            CsLang.TestInterface();
+            //CsLang.TestInterface();
             //new FjUe();
             //new Linq();
             //StructTest1();
