@@ -937,7 +937,7 @@ namespace KsViTd {
 
             public void Dispose() => evLock.Dispose();
         }
-        
+
         public sealed class Transaction : IDisposable {
             readonly ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
             DateTime timeOfLastTrans;
@@ -992,7 +992,87 @@ namespace KsViTd {
 
             public void Dispose() => rwLock.Dispose();
         }
-        
+
+        public enum OneManyMode {
+            Exclusive, Shared
+        }
+        public sealed class AsyncOneManyLock {
+            #region 锁的代码
+            SpinLock spinLock = new SpinLock();
+            void Lock() {
+                var token = false;
+                spinLock.Enter(ref token);
+            }
+            void UnLock() => spinLock.Exit();
+
+            #endregion
+
+            #region 锁的状态和辅助方法
+            int state = 0;
+            bool isFree => state == 0;
+            bool isOwnedByWriter => state == -1;
+            bool isOwnedByreaders => state > 0;
+            int addReaders(int count) => state += count;
+            int subtractReaders() => --state;
+            void makeWriter() => state = -1;
+            void makeFree() => state = 0;
+            #endregion
+
+            readonly Task noContentionAccessGranter = Task.FromResult<object>(null);
+            readonly Queue<TaskCompletionSource<object>> waitingWriters = new Queue<TaskCompletionSource<object>>();
+            TaskCompletionSource<object> waitingReadersSignal = new TaskCompletionSource<object>();
+            int waitingReadersCount;
+
+            public Task WaitAsync(OneManyMode mode) {
+                var accessGranter = noContentionAccessGranter;
+
+                Lock();
+                switch (mode) {
+                case OneManyMode.Exclusive:
+                    if (isFree) { makeWriter(); break; }
+                    var tcs = new TaskCompletionSource<object>();
+                    waitingWriters.Enqueue(tcs);
+                    accessGranter = tcs.Task;
+                    break;
+                case OneManyMode.Shared:
+                    if (isFree || (isOwnedByreaders && waitingWriters.Count == 0)) {
+                        addReaders(1);
+                        break;
+                    }
+                    waitingReadersCount++;
+                    accessGranter = waitingReadersSignal.Task.ContinueWith(t => t.Result);
+                    break;
+                }
+                UnLock();
+
+                return accessGranter;
+            }
+
+            public void Release() {
+                TaskCompletionSource<object> accessGranter = null;
+
+                Lock();
+                if (isOwnedByWriter) { makeFree(); }
+                else { subtractReaders(); }
+
+                if (isFree) {
+                    if (waitingWriters.Count > 0) {
+                        makeWriter();
+                        accessGranter = waitingWriters.Dequeue();
+                    } else if (waitingReadersCount > 0) {
+                        addReaders(waitingReadersCount);
+                        waitingReadersCount = 0;
+                        accessGranter = waitingReadersSignal;
+                        waitingReadersSignal = new TaskCompletionSource<object>();
+                    }
+                }
+                UnLock();
+                if (accessGranter != null) {
+                    accessGranter.SetResult(null);  // 唤醒外面的 waiter/reader，减少竞争几率以提高性能
+                }
+            }
+
+        }
 
         #endregion
     }
