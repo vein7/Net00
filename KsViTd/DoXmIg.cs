@@ -1052,8 +1052,11 @@ namespace KsViTd {
                 TaskCompletionSource<object> accessGranter = null;
 
                 Lock();
-                if (isOwnedByWriter) { makeFree(); }
-                else { subtractReaders(); }
+                if (isOwnedByWriter) {
+                    makeFree();
+                } else {
+                    subtractReaders();
+                }
 
                 if (isFree) {
                     if (waitingWriters.Count > 0) {
@@ -1074,6 +1077,61 @@ namespace KsViTd {
 
         }
 
+        public static class TestSpinLock {
+            static SpinLock spinLock = new SpinLock();
+            public static int Num;
+
+            public static void Test() {
+                Parallel.Invoke(Thread1, Thread2);
+            }
+            static void Thread1() {
+                Console.WriteLine("Thread1 ----------");
+                var token = false;
+                spinLock.Enter(ref token);      // 有一个 spinLock 在自旋的时候，其他的 spinLock.Enter 也不能进入代码快运行
+                Console.WriteLine("Thread1 Enter");
+                Task.Delay(1000).Wait();
+                Num += 10;
+                Console.WriteLine($"Thread1 Exit, Num: {Num}");
+                spinLock.Exit();
+            }
+            static void Thread2() {
+                Console.WriteLine("Thread2 ----------");
+                var token = false;
+                spinLock.Enter(ref token);      // 有一个 spinLock 在自旋的时候，其他的 spinLock.Enter 也不能进入代码快运行
+                Console.WriteLine("Thread2 Enter");
+                Task.Delay(2000).Wait();
+                Num += 1000;
+                Console.WriteLine($"Thread2 Exit, Num: {Num}");
+                spinLock.Exit();
+            }
+
+        }
+
+        public static class TestMonitor {
+            static object objLock = new object();
+
+            public static void Test() {
+                Parallel.Invoke(Thread1, Thread2);
+            }
+            static void Thread1() {
+                Console.WriteLine("Thread1 ----------");
+                var token = false;
+                Monitor.Enter(objLock, ref token);      // objLock 被锁住的时候，其他的代码块也不能进入
+                Console.WriteLine("Thread1 Enter");
+                Task.Delay(1000).Wait();
+                Console.WriteLine($"Thread1 Exit");
+                Monitor.Exit(objLock);
+            }
+            static void Thread2() {
+                Console.WriteLine("Thread2 ----------");
+                var token = false;
+                Monitor.Enter(objLock, ref token);      // objLock 被锁住的时候，其他的代码块也不能进入
+                Console.WriteLine("Thread2 Enter");
+                Task.Delay(2000).Wait();
+                Console.WriteLine($"Thread2 Exit");
+                Monitor.Exit(objLock);
+            }
+        }
         #endregion
     }
 
