@@ -2,20 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Wisdom4s.Utility;
 
-namespace Wisdom4s.Web.Entity
-{
+namespace KsViTd.Excel {
 
-    public abstract class Msg
-    {
+    public delegate bool DTry<T, TValue>(T obj, out TValue val);
+    public static class ObjUtil {
+        public static bool TryParse<T>(object obj, out T val) {
+            throw new NotSupportedException();
+        }
+    }
+
+    public abstract class Msg {
         #region 内部泛型静态字段
-        protected static class SMsg<T>
-        {
+        protected static class SMsg<T> {
             public static string InvalidType;
         }
-        static Msg()
-        {
+        static Msg() {
             SMsg<short>.InvalidType = "无效的整数";
             SMsg<int>.InvalidType = "无效的整数";
             SMsg<long>.InvalidType = "无效的整数";
@@ -48,8 +50,7 @@ namespace Wisdom4s.Web.Entity
         public bool RowHaveErr() { return msgLen > Builder.Length; }
         public override string ToString() { return Builder.ToString(); }
 
-        public void SetRow(int rowNo)
-        {
+        public void SetRow(int rowNo) {
             this.rowNo = rowNo.ToString();
             msgLen = Builder.Length;
         }
@@ -67,8 +68,7 @@ namespace Wisdom4s.Web.Entity
 
     }
 
-    public abstract class CellBase<TValue> : IReadCell
-    {
+    public abstract class CellBase<TValue> : IReadCell {
         public string Name;
         public TValue Value;
         /// <summary>
@@ -88,15 +88,12 @@ namespace Wisdom4s.Web.Entity
     /// <summary>
     /// 可空
     /// </summary>
-    public class CellNullable<TValue> : CellBase<TValue>
-    {
+    public class CellNullable<TValue> : CellBase<TValue> {
         public CellNullable(string name) : base(name) { }
 
-        public override void Reading(Msg msg, object obj)
-        {
+        public override void Reading(Msg msg, object obj) {
             Value = default(TValue);
-            if (obj != null && string.IsNullOrWhiteSpace(obj.ToString()) == false)
-            {
+            if (obj != null && string.IsNullOrWhiteSpace(obj.ToString()) == false) {
                 msg.Parse(this, obj);
             }
             Verify(this, msg);
@@ -106,25 +103,21 @@ namespace Wisdom4s.Web.Entity
     /// <summary>
     /// 非空
     /// </summary>
-    public class Cell<TValue> : CellBase<TValue>
-    {
+    public class Cell<TValue> : CellBase<TValue> {
         public Cell(string name) : base(name) { }
 
-        public override void Reading(Msg msg, object obj)
-        {
+        public override void Reading(Msg msg, object obj) {
             Value = default(TValue);
-            if (msg.NotNull(this, obj) && msg.Parse(this, obj))
-            {
+            if (msg.NotNull(this, obj) && msg.Parse(this, obj)) {
                 Verify(this, msg);
             }
         }
     }
-    
+
     /// <summary>
     /// 文本内容，不进行Parse，如果有长度限制，会进行检查
     /// </summary>
-    public class CellText : CellBase<string>
-    {
+    public class CellText : CellBase<string> {
         /// <summary>
         /// 文本最大长度限制，默认是0，不进行最大长度限制检查
         /// </summary>
@@ -134,13 +127,11 @@ namespace Wisdom4s.Web.Entity
         /// </summary>
         public readonly bool IsNullable;
         public CellText(string name, bool isNullable = true, int maxLen = 0)
-            : base(name)
-        {
+            : base(name) {
             MaxLen = maxLen;
             IsNullable = isNullable;
         }
-        public override void Reading(Msg msg, object obj)
-        {
+        public override void Reading(Msg msg, object obj) {
             Value = obj == null ? "" : obj.ToString().Trim();
             if (IsNullable == false && msg.NotNull(this, obj) == false) { return; }
             if (msg.VerifyLen(this) == false) { return; }
@@ -153,15 +144,12 @@ namespace Wisdom4s.Web.Entity
     /// 该类默认使用 double 类型解析，然后强制转换为 int      <para></para>
     /// Excel 没有 int 类型，对于特殊格式的数值可能会解析错误，例如数值 1.00 使用 int.TryParse 会解析错误
     /// </summary>
-    public class CellInt : Cell<int>
-    {
+    public class CellInt : Cell<int> {
         public CellInt(string name)
-            : base(name)
-        {
+            : base(name) {
             TryParse = ParseDouble;
         }
-        public static bool ParseDouble(object obj, out int val)
-        {
+        public static bool ParseDouble(object obj, out int val) {
             var d = 0D;
             var bol = ObjUtil.TryParse(obj, out d);
             val = (int)d;
@@ -174,50 +162,42 @@ namespace Wisdom4s.Web.Entity
     /// 该类默认使用 double 类型解析，然后强制转换为 int。 <para></para>
     /// Excel 没有 Int 类型，对于特殊格式的数值可能会解析错误，例如数值 1.00 使用 int.TryParse 会解析错误
     /// </summary>
-    public class CellIntN : CellNullable<int>
-    {
+    public class CellIntN : CellNullable<int> {
         public CellIntN(string name)
-            : base(name)
-        {
+            : base(name) {
             TryParse = CellInt.ParseDouble;
         }
     }
 
-    public class CellDate : Cell<DateTime>
-    {
+    public class CellDate : Cell<DateTime> {
         public CellDate(string name)
-            : base(name)
-        {
+            : base(name) {
             // Cell<DateTime> 类默认会调用 ObjUtil.TryParse<T>(object obj, out T val)，obj 参数类型为 double 时会解析失败
             // 本类使用 ObjUtil.TryParse(object obj, out DateTime val)，因为 Cell<DateTime> 类在运行时无法进行重载
-            TryParse = ObjUtil.TryParse;      
-        }
-    }
-
-    public class CellDateN : CellNullable<DateTime>
-    {
-        public CellDateN(string name)
-            : base(name)
-        {
             TryParse = ObjUtil.TryParse;
         }
     }
 
-    public class CellEnum<TEnum> : Cell<TEnum> where TEnum : struct
-    {
+    public class CellDateN : CellNullable<DateTime> {
+        public CellDateN(string name)
+            : base(name) {
+            TryParse = ObjUtil.TryParse;
+        }
+    }
+
+    public class CellEnum<TEnum> : Cell<TEnum> where TEnum : struct {
         public readonly bool IgnoreCase;
         public CellEnum(string name, bool ignoreCase = true)
-            : base(name)
-        {
+            : base(name) {
             IgnoreCase = ignoreCase;
             TryParse = ParseEnum;
         }
 
-        public bool ParseEnum(object obj, out TEnum val)
-        {
+        public bool ParseEnum(object obj, out TEnum val) {
             return Enum.TryParse<TEnum>(obj.ToString(), IgnoreCase, out val);
         }
 
     }
+
 
 }

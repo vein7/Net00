@@ -475,6 +475,60 @@ namespace KsViTd {
             System.Collections.Concurrent.ConcurrentBag<int> ls;
             return this;
         }
+
+        public static void ParallelExc() {
+            try {
+                Parallel.For(0, 100, i => {
+                    Task.Delay(100).Wait();
+                    if (i / 10 == 4) {
+                        Console.WriteLine(i);
+                        throw new OperationCanceledException($"{i}");   // 这个异常会进入 AggregateException，无法直接捕获，详见 ParallelCancel
+                    }
+                    if (i > 70) {
+                        throw new InvalidOperationException($"{i}");
+                    }
+                });
+            } catch (OperationCanceledException e) {        // 无法直接捕获 throw new OperationCanceledException，详见 ParallelCancel
+                Console.WriteLine("OperationCanceledException");
+            } catch (AggregateException e) {
+                Console.WriteLine($"count: {e.InnerExceptions.Count}; {string.Join(",", e.InnerExceptions.Select(ex => ex.Message))}");
+                // throw;
+            }
+        }
+
+        public static void ParallelCancel() {
+            var po = new ParallelOptions();
+            var cts = new CancellationTokenSource();
+            var cts2 = new CancellationTokenSource();
+            po.CancellationToken = cts.Token;
+            try {
+                Parallel.For(0, 500, po, i => {
+                    po.CancellationToken.ThrowIfCancellationRequested();
+                    Task.Delay(10).Wait();
+                    Console.WriteLine($"thread id: { Thread.CurrentThread.ManagedThreadId }, i: {i}");
+
+                    if (i / 100 == 4) {
+                        Console.WriteLine($"thread id: { Thread.CurrentThread.ManagedThreadId },\t\t\t cts.Cancel: {i}");
+                        cts.Cancel();           
+                        // 如果直接抛出 OperationCanceledException 会进入 AggregateException
+                        // 一个线程取消，其他线程也会尽快的取消，结束执行
+                        return;
+                    }
+                    if (i > 50) {
+                        //Console.WriteLine($"thread id: { Thread.CurrentThread.ManagedThreadId },\t\t\t cts2.Cancel: {i}");
+                        cts2.Cancel();          // 对该 Parallel 执行无影响
+                        return;
+                    }
+                });
+            } catch (OperationCanceledException e) {
+                Console.WriteLine("OperationCanceledException");
+            } catch (AggregateException e) {
+                Console.WriteLine($"count: {e.InnerExceptions.Count}; {string.Join(",", e.InnerExceptions.Select(ex => ex.Message))}");
+                // throw;
+            }
+
+        }
+
         #endregion
 
         public DoXmIg Timer1() {

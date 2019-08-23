@@ -4,27 +4,23 @@ using System.Linq;
 using System.Text;
 using OfficeOpenXml;
 
-namespace Wisdom4s.Web.Entity
-{
-    public interface IReadCell
-    {
+namespace KsViTd.Excel {
+    public interface IReadCell {
         void Reading(Msg msg, object obj);
     }
 
-    public interface ISheetReader
-    {
+    public interface ISheetReader {
         int StartRow { get; }
         string GetMsg();
         bool BeforeRead(ExcelRange range, ExcelCellAddress end);
         void ReadRange();
         void ReadFinished();
     }
-    
+
     /// <summary>
     /// 读取工作簿的部分区域
     /// </summary>
-    public abstract class SheetReader<TEntity> : ISheetReader
-    {
+    public abstract class SheetReader<TEntity> : ISheetReader {
         public TEntity Entity;
         public List<TEntity> Entities;
         public Msg Msg;
@@ -43,8 +39,7 @@ namespace Wisdom4s.Web.Entity
         public virtual void ResetICol() { iCol = 0; }
         public virtual void ReadEnd() { }
 
-        public virtual bool BeforeRead(ExcelRange range, ExcelCellAddress end)
-        {
+        public virtual bool BeforeRead(ExcelRange range, ExcelCellAddress end) {
             this.range = range;
             endRow = end.Row;
             iRow = StartRow - 1;
@@ -53,8 +48,7 @@ namespace Wisdom4s.Web.Entity
             return true;
         }
 
-        public virtual bool NextRow()
-        {
+        public virtual bool NextRow() {
             if (++iRow > endRow) { return false; }
 
             Msg.SetRow(iRow);
@@ -63,12 +57,9 @@ namespace Wisdom4s.Web.Entity
             return true;
         }
 
-        public virtual void ReadRange()
-        {
-            while (NextRow())
-            {
-                foreach (var cell in ReadRow())
-                {
+        public virtual void ReadRange() {
+            while (NextRow()) {
+                foreach (var cell in ReadRow()) {
                     cell.Reading(Msg, range[iRow, ++iCol].Value);
                 }
             }

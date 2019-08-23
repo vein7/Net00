@@ -57,9 +57,12 @@
     <Compile Include="DoXmIg.cs" />
     <Compile Include="DynamicTest.cs" />
     <Compile Include="EFun.cs" />
+    <Compile Include="Excel\Cell.cs" />
     <Compile Include="Excel\ColModels.cs" />
+    <Compile Include="Excel\ExcelReader.cs" />
     <Compile Include="Excel\ExcelWriter.cs" />
     <Compile Include="Excel\Import.cs" />
+    <Compile Include="Excel\MsgHtml.cs" />
     <Compile Include="FilterQurey.cs" />
     <Compile Include="FjUe.cs" />
     <Compile Include="GC.cs" />

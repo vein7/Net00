@@ -39,7 +39,7 @@ namespace KsViTd {
         
         static void Main(string[] args) {
             //var tester = new DoXmIg().Parallel4();
-            DoXmIg.TestMonitor.Test();
+            DoXmIg.ParallelCancel();
             //EnumEF.Test();
             //Stopwatch.StartNew
 
