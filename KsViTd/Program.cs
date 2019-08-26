@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 using KsViTd.Base;
 
 namespace KsViTd {
@@ -38,11 +39,11 @@ namespace KsViTd {
     class Program {
         
         static void Main(string[] args) {
-            //var tester = new DoXmIg().Parallel4();
-            DoXmIg.ParallelCancel();
+
+            DoXmIg.TaskCancel2();
             //EnumEF.Test();
             //Stopwatch.StartNew
-
+            
             Debug.WriteLine("SomeText");
             //CsLang.TestInterface();
             //new FjUe();
@@ -54,7 +55,7 @@ namespace KsViTd {
 
             //没什么
             //KsViTd.Excel.ExcelWriter.Test();
-
+             
             //new LTest().Test2();
             Console.ReadKey();
             return;

@@ -314,7 +314,7 @@ namespace KsViTd {
             return this;
         }
 
-        public DoXmIg Task4() {
+        public DoXmIg TaskEx() {
             Func<CancellationToken, int, int> fnSum = (ct, n) => {
                 int sum = 0;
                 for (; n > 0; n--) {
@@ -347,6 +347,119 @@ namespace KsViTd {
             return this;
         }
 
+        public static void Task_ContinuationOptions() {
+            var task = new Task(() => {
+                throw new InvalidOperationException();
+            });
+            task.ContinueWith((t) => Console.WriteLine("出了异常，这算不算完成"));
+            task.Start();
+
+            var taskOk = new Task(() => {
+                Task.Delay(10).Wait();
+            });
+            taskOk.ContinueWith((t) => Console.WriteLine("OnlyOnFaulted"), TaskContinuationOptions.OnlyOnFaulted);
+            taskOk.Start();
+
+            var cts = new CancellationTokenSource();
+            var taskCancel = new Task(() => {
+                Task.Delay(10).Wait();
+            }, cts.Token);
+            taskCancel.ContinueWith((t) => Console.WriteLine("OnlyOnCanceled"), TaskContinuationOptions.OnlyOnCanceled);
+            taskCancel.ContinueWith((t) => Console.WriteLine("NotOnCanceled"), TaskContinuationOptions.NotOnCanceled);
+            taskCancel.Start();
+            cts.Cancel();
+
+            var taskCancel2 = new Task(() => {
+                Console.WriteLine("taskCancel2");
+                throw new TaskCanceledException("taskCancel2");     // taskCancel2.Status 不是 Canceled
+            });
+            taskCancel2.Start();
+            Console.WriteLine($"taskCancel2.Status: {taskCancel2.Status}");
+
+        }
+
+        public static void TaskCancel() {
+            var cts = new CancellationTokenSource(100);
+            var token = cts.Token;
+            var t1 = Task.Run(() => {
+                Console.WriteLine("t1 start");
+                Task.Delay(220).Wait();
+                if (token.IsCancellationRequested) {
+                    Console.WriteLine("CancellationRequested");
+                    token.ThrowIfCancellationRequested();
+                }
+            }, token);
+            var t2 = t1.ContinueWith((t) => {
+                Console.WriteLine("ContinueWith");
+                //Task.Delay(120).Wait();
+                //if (token.IsCancellationRequested) {
+                //    Console.WriteLine("ContinueWith CancellationRequested");
+                //    token.ThrowIfCancellationRequested();
+                //}
+            }, token);
+            try {
+
+                t2.Wait();
+            } catch {
+
+                // throw;
+            }
+            Console.WriteLine($"t1.Status: {t1.Status}");
+            Console.WriteLine($"t2.Status: {t2.Status}");
+        }
+
+        public static void TaskCancel2() {
+            Random rnd = new Random();
+            var cts = new CancellationTokenSource(5000);
+            CancellationToken token = cts.Token;
+
+            var t = Task.Run(() => {
+                List<int> product33 = new List<int>();
+                for (int i = 1; i < Int16.MaxValue; i++) {
+                    if (token.IsCancellationRequested) {
+                        Console.WriteLine("\nCancellation requested in antecedent...\n");
+                        token.ThrowIfCancellationRequested();
+                    }
+                    if (i % 2000 == 0) { Thread.Sleep(rnd.Next(16, 501)); }
+                    if (i % 33 == 0) { product33.Add(i); }
+                }
+                return product33;
+            }, token);
+
+            var continuation = t.ContinueWith(antecedent => {
+                Console.WriteLine("Multiples of 33:\n");
+                var arr = antecedent.Result;
+                for (int i = 0; i < arr.Count; i++) {
+                    if (token.IsCancellationRequested) {
+                        Console.WriteLine("\nCancellation requested in continuation...\n");
+                        token.ThrowIfCancellationRequested();
+                    }
+
+                    if (i % 100 == 0) {
+                        int delay = rnd.Next(16, 251);
+                        Thread.Sleep(delay);
+                    }
+                    Console.Write($"{arr[i]}, ");
+                }
+                Console.WriteLine();
+            }, token);
+
+            try {
+                continuation.Wait();
+            } catch (AggregateException e) {
+                foreach (Exception ie in e.InnerExceptions)
+                    Console.WriteLine("{0}: {1}", ie.GetType().Name, ie.Message);
+            } finally {
+                cts.Dispose();
+            }
+
+            Console.WriteLine("\nAntecedent Status: {0}", t.Status);
+            Console.WriteLine("Continuation Status: {0}", continuation.Status);
+        }
+
+        /// <summary>
+        /// <see cref="TaskCreationOptions.AttachedToParent"/>
+        /// </summary>
         public DoXmIg Task5() {
             var parent = new Task<int[]>(() => {
                 Console.WriteLine("parent start" + DateTime.Now.ToLongTimeString());
@@ -382,6 +495,26 @@ namespace KsViTd {
             Console.WriteLine("Task5 Return ---" + DateTime.Now.ToLongTimeString());
             return this;
         }
+
+        public static async Task Task6() {
+            var num = 0;
+
+            Action act = async () => {
+                Console.WriteLine($"act id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
+                await Task.Delay(500);
+                Console.WriteLine($"act await id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
+                num = 3;
+            };
+
+            Console.WriteLine($"fn id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
+            await Task.Run(act);
+            Console.WriteLine($"fn2 id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
+            Console.WriteLine(num);
+            // 把 act 的类型改为 Func<Task>，这是这个函数的实际类型，act 实际上返回的是Task，
+            // 但是在 await Task.Run(act) 的时候，act 已经执行完毕，并返回一个 Task，应该是被包了一层，没有进行 await
+
+        }
+
 
         #endregion
 
@@ -478,15 +611,18 @@ namespace KsViTd {
 
         public static void ParallelExc() {
             try {
-                Parallel.For(0, 100, i => {
+                Parallel.For(0, 300, i => {
                     Task.Delay(100).Wait();
-                    if (i / 10 == 4) {
-                        Console.WriteLine(i);
+                    if (i % 10 == 4) {
+                        Console.WriteLine($"OperationCanceledException:{ Thread.CurrentThread.ManagedThreadId }, i: {i}");
                         throw new OperationCanceledException($"{i}");   // 这个异常会进入 AggregateException，无法直接捕获，详见 ParallelCancel
                     }
                     if (i > 70) {
+                        Console.WriteLine($"InvalidOperationException:{ Thread.CurrentThread.ManagedThreadId }, i: {i}");
                         throw new InvalidOperationException($"{i}");
                     }
+                    // 一个线程出现异常，其他线程也会尽快中断
+                    Console.WriteLine($"thread id: { Thread.CurrentThread.ManagedThreadId }, i: {i}");
                 });
             } catch (OperationCanceledException e) {        // 无法直接捕获 throw new OperationCanceledException，详见 ParallelCancel
                 Console.WriteLine("OperationCanceledException");
@@ -509,7 +645,7 @@ namespace KsViTd {
 
                     if (i / 100 == 4) {
                         Console.WriteLine($"thread id: { Thread.CurrentThread.ManagedThreadId },\t\t\t cts.Cancel: {i}");
-                        cts.Cancel();           
+                        cts.Cancel();
                         // 如果直接抛出 OperationCanceledException 会进入 AggregateException
                         // 一个线程取消，其他线程也会尽快的取消，结束执行
                         return;
@@ -527,6 +663,17 @@ namespace KsViTd {
                 // throw;
             }
 
+        }
+
+        public static void ParallelPartitioner() {
+            Parallel.ForEach(Partitioner.Create(0, 1000), (range) => {
+                // 每一块范围都调用一次委托，而不是每次循环都去调用委托
+                var sum = 0;
+                for (var i = range.Item1; i < range.Item2; i++) {
+                    sum += i;
+                }
+                Console.WriteLine($"{range}, {sum}");
+            });
         }
 
         #endregion
@@ -681,25 +828,6 @@ namespace KsViTd {
         }
 
         #endregion
-
-        public static async Task Task11() {
-            var num = 0;
-
-            Action act = async () => {
-                Console.WriteLine($"act id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
-                await Task.Delay(500);
-                Console.WriteLine($"act await id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
-                num = 3;
-            };
-
-            Console.WriteLine($"fn id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
-            await Task.Run(act);
-            Console.WriteLine($"fn2 id: {Task.CurrentId}, {Thread.CurrentThread.ManagedThreadId}");
-            Console.WriteLine(num);
-            // 把 act 的类型改为 Func<Task>，这是这个函数的实际类型，act 实际上返回的是Task，
-            // 但是在 await Task.Run(act) 的时候，act 已经执行完毕，并返回一个 Task，应该是被包了一层，没有进行 await
-
-        }
 
         public static void TaskWhenAll() {
             var tasks = Task.WhenAll(new[] {
