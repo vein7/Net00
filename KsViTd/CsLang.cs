@@ -186,7 +186,7 @@ namespace KsViTd {
         }
 
         class ClientA2 : ClientA {
-            public void Dispose() => Console.WriteLine("ClientA2 Dispose");
+            new public void Dispose() => Console.WriteLine("ClientA2 Dispose");
 
             public void Test1() {
                 ((IDisposable)this).Dispose();
@@ -194,6 +194,19 @@ namespace KsViTd {
             }
 
             public override void Dispose(bool isDisposing) => Console.WriteLine("ClientB isDisposing: " + isDisposing);
+        }
+        struct AA : IComparable {
+            int IComparable.CompareTo(object obj) => -1;
+            public int CompareTo(AA a) {
+                return 1;
+            }
+
+            public static void Test1() {
+                var a = new AA();
+                var b = new AA();
+                Console.WriteLine(a.CompareTo(b));
+                Console.WriteLine(((IComparable)a).CompareTo(b));
+            }
         }
 
         #endregion

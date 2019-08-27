@@ -388,24 +388,38 @@ namespace KsViTd {
                     Console.WriteLine("CancellationRequested");
                     token.ThrowIfCancellationRequested();
                 }
+                return 1;
             }, token);
             var t2 = t1.ContinueWith((t) => {
                 Console.WriteLine("ContinueWith");
-                //Task.Delay(120).Wait();
-                //if (token.IsCancellationRequested) {
-                //    Console.WriteLine("ContinueWith CancellationRequested");
-                //    token.ThrowIfCancellationRequested();
-                //}
-            }, token);
+                Task.Delay(120).Wait();
+                if (token.IsCancellationRequested) {
+                    Console.WriteLine("ContinueWith CancellationRequested");
+                    //token.ThrowIfCancellationRequested();
+                }
+            }, token);      //  token 如果是已取消的，t2 根本不会运行
+
             try {
 
-                t2.Wait();
-            } catch {
-
+                t2.Wait();      // 在100毫秒后 token 取消，t2.Wait() 立即返回，也就是这里仅仅只阻塞100毫秒，此时 t1 还没有运行结束
+            } catch (Exception ex) {
+                Console.WriteLine($"{ex.GetType()}, {ex.Message}");
                 // throw;
             }
             Console.WriteLine($"t1.Status: {t1.Status}");
-            Console.WriteLine($"t2.Status: {t2.Status}");
+            Console.WriteLine($"t2.Status: {t2.Status}\n\n");
+
+            try {
+                // var a = t1.Result;               // t1.Result 会抛出 AggregateException，不会抛出 OperationCanceledException
+                // t1.Wait();                       // 和 t1.Result 处理方式一样
+                t1.GetAwaiter().GetResult();        // 如果 Task 是取消的，会抛出 TaskCanceledException
+                // await t1.Result;                 // 和 t1.GetAwaiter().GetResult() 处理方式一样
+            } catch (OperationCanceledException ex) {
+                Console.WriteLine("t1 OperationCanceledException");
+            } catch (AggregateException ex) {
+                Console.WriteLine($"{string.Join("\n", ex.InnerExceptions)}");
+            }
+            Console.WriteLine($"t1.Status: {t1.Status}");
         }
 
         public static void TaskCancel2() {
@@ -423,22 +437,21 @@ namespace KsViTd {
                     if (i % 2000 == 0) { Thread.Sleep(rnd.Next(16, 501)); }
                     if (i % 33 == 0) { product33.Add(i); }
                 }
+
+                Console.WriteLine($"end({product33.Count})");
                 return product33;
             }, token);
 
             var continuation = t.ContinueWith(antecedent => {
-                Console.WriteLine("Multiples of 33:\n");
                 var arr = antecedent.Result;
+                Console.WriteLine($"Multiples of 33, ({arr.Count}):\n");
                 for (int i = 0; i < arr.Count; i++) {
                     if (token.IsCancellationRequested) {
                         Console.WriteLine("\nCancellation requested in continuation...\n");
                         token.ThrowIfCancellationRequested();
                     }
 
-                    if (i % 100 == 0) {
-                        int delay = rnd.Next(16, 251);
-                        Thread.Sleep(delay);
-                    }
+                    if (i % 100 == 0) { Thread.Sleep(rnd.Next(16, 251)); }
                     Console.Write($"{arr[i]}, ");
                 }
                 Console.WriteLine();
@@ -457,10 +470,7 @@ namespace KsViTd {
             Console.WriteLine("Continuation Status: {0}", continuation.Status);
         }
 
-        /// <summary>
-        /// <see cref="TaskCreationOptions.AttachedToParent"/>
-        /// </summary>
-        public DoXmIg Task5() {
+        public static void Task_AttachedToParent() {
             var parent = new Task<int[]>(() => {
                 Console.WriteLine("parent start" + DateTime.Now.ToLongTimeString());
                 var ls = new int[3];
@@ -490,10 +500,31 @@ namespace KsViTd {
 
             parent.ContinueWith((t) => Console.WriteLine(string.Join(",", t.Result)));
             parent.Start();
-            var tf = new TaskFactory<int>();
 
-            Console.WriteLine("Task5 Return ---" + DateTime.Now.ToLongTimeString());
-            return this;
+            Console.WriteLine("Task_AttachedToParent Return ---" + DateTime.Now.ToLongTimeString());
+
+            // 附加子任务有以下特点：
+            // 父级将等待子任务完成, 父级将传播由子任务引发的异常, 父级的状态取决于子级的状态
+        }
+
+        public static void Task_AttachedToParent2() {
+            Console.WriteLine(DateTime.Now.TimeOfDay);
+            var t1 = Task.Run(() => {
+                var child = Task.Factory.StartNew(
+                    () => {
+                        Task.Delay(2000).Wait();
+                        Console.WriteLine($"Factory.StartNew, {DateTime.Now.TimeOfDay}");
+                    }, TaskCreationOptions.AttachedToParent);
+                Console.WriteLine($"child.CreationOptions: {child.CreationOptions}");
+                // 这里附加是失败的，但是没有抛出异常，仍会运行任务，但是和父任务没有关联
+                // 默认情况，new Task 和 Task.Factory.StartNew 创建的 Task 的 CreationOptions 是 None
+
+                Task.Delay(1000).Wait();
+                Console.WriteLine($"Task.Run, {DateTime.Now.TimeOfDay}");
+            });
+            Console.WriteLine($"t1.CreationOptions: {t1.CreationOptions}");
+            t1.Wait();      //  阻塞 1000 毫秒
+            Console.WriteLine(DateTime.Now.TimeOfDay);
         }
 
         public static async Task Task6() {
@@ -515,6 +546,19 @@ namespace KsViTd {
 
         }
 
+        public static async Task TaskTest() {
+            Console.WriteLine($"Function ThreadId: {Thread.CurrentThread.ManagedThreadId}");
+            var t1 = Task.Run(() => {
+                Console.WriteLine($"Task ThreadId: {Thread.CurrentThread.ManagedThreadId}");
+                return DateTime.Now;
+            });
+            var d = await t1;
+            Console.WriteLine($"await ThreadId: {Thread.CurrentThread.ManagedThreadId}");
+        }
+
+        public static void Task100() {
+
+        }
 
         #endregion
 

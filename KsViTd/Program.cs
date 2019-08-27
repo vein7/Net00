@@ -40,7 +40,7 @@ namespace KsViTd {
         
         static void Main(string[] args) {
 
-            DoXmIg.TaskCancel2();
+            DoXmIg.Task_AttachedToParent2();
             //EnumEF.Test();
             //Stopwatch.StartNew
             
