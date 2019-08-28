@@ -556,9 +556,6 @@ namespace KsViTd {
             Console.WriteLine($"await ThreadId: {Thread.CurrentThread.ManagedThreadId}");
         }
 
-        public static void Task100() {
-
-        }
 
         #endregion
 

@@ -37,13 +37,13 @@ namespace KsViTd {
     //}
 
     class Program {
-        
+
         static void Main(string[] args) {
 
-            DoXmIg.Task_AttachedToParent2();
+            //DoXmIg.Task_AttachedToParent2();
             //EnumEF.Test();
             //Stopwatch.StartNew
-            
+
             Debug.WriteLine("SomeText");
             //CsLang.TestInterface();
             //new FjUe();
@@ -55,7 +55,7 @@ namespace KsViTd {
 
             //没什么
             //KsViTd.Excel.ExcelWriter.Test();
-             
+
             //new LTest().Test2();
             Console.ReadKey();
             return;
@@ -69,7 +69,7 @@ namespace KsViTd {
 
             C2 objC2 = "33";
             objC2 = "44";
-            
+
 
 
             var m = typeof(C1).GetMember("IntB");
@@ -108,7 +108,7 @@ namespace KsViTd {
             return new[] { 1, 3, 3 };
         }
         static int[] Calc() {
-            var ls = new[] { 1, 2 }; 
+            var ls = new[] { 1, 2 };
             try {
                 return ls;
             } finally {
@@ -117,9 +117,9 @@ namespace KsViTd {
             }
         }
         static ref int Calc0() {
-            var ls = new[] { 1, 2 }; 
+            var ls = new[] { 1, 2 };
             try {
-                 return ref ls[1];
+                return ref ls[1];
             } finally {
                 Console.WriteLine("finally");
                 ls[1] = 33;
