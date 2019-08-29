@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Async.cs" />
     <Compile Include="BiBc.cs" />
     <Compile Include="CStatic.cs" />
     <Compile Include="Enums.cs" />

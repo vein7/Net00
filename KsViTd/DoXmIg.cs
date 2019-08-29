@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.Net.Http;
+using System.Threading.Tasks.Dataflow;
 
 namespace KsViTd {
     class DoXmIg {
@@ -1355,6 +1356,46 @@ namespace KsViTd {
                 Monitor.Exit(objLock);
             }
         }
+        #endregion
+
+        #region DataFlow
+
+        public class DF {
+            public static void Test1() {
+
+            }
+
+            public static void BufferBlock1() {
+                var buffer = new BufferBlock<int>();
+                Task.Run(Receive);
+                buffer.Post(1);
+                buffer.Post(12);
+                buffer.Post(13);
+                Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId} --- {buffer.Count}");
+                buffer.Post(2);
+                Task.Delay(10).Wait();
+                Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId} --- {buffer.Count}");
+                buffer.Post(3);
+                Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId} --- {buffer.Count}");
+
+                async Task Receive() {
+                    Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}, {await buffer.ReceiveAsync()}");
+                    Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}, {await buffer.ReceiveAsync()}");
+                    Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}, {await buffer.ReceiveAsync()}");
+                    Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}, {await buffer.ReceiveAsync()}");
+                    Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}, {await buffer.ReceiveAsync()}");
+                }
+            }
+
+            public static void ActionBlock1() {
+                var act = new ActionBlock<int>((item) => {
+                    Console.WriteLine(item);
+                });
+            }
+
+        }
+
+
         #endregion
     }
 
