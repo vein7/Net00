@@ -1385,14 +1385,47 @@ namespace KsViTd {
                     Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}, {await buffer.ReceiveAsync()}");
                     Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}, {await buffer.ReceiveAsync()}");
                 }
+
             }
 
             public static void ActionBlock1() {
                 var act = new ActionBlock<int>((item) => {
-                    Console.WriteLine(item);
-                });
+                    Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}, {item}");
+                }, new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = 3 });
+                for (int i = 0; i < 120; i++) {
+                    act.Post(i);
+                }
+                act.Complete();
+                act.Post(333);      // 不会抛出异常，但是也不会被发送
             }
 
+            public static async Task TransfromBlock1() {
+                var client = new HttpClient();
+                var tran = new TransformBlock<string, string>((url) => {
+                    return client.GetAsync(url).ContinueWith(t => {
+                        return $"{t.Result.StatusCode} ---- {url}";
+                    });
+                });
+                tran.Post("https://www.baidu.com");
+                tran.Post("https://cn.bing.com");
+                Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}");
+                Console.WriteLine($"{await tran.ReceiveAsync()}, {Thread.CurrentThread.ManagedThreadId}");
+                Console.WriteLine($"{await tran.ReceiveAsync()}, {Thread.CurrentThread.ManagedThreadId}");
+                
+            }
+
+            public static void BatchBlock1() {
+                var batch = new BatchBlock<int>(7, new GroupingDataflowBlockOptions() { Greedy = false });
+                var disp = batch.LinkTo(new ActionBlock<int[]>((arr) =>
+                    Console.WriteLine(string.Join(",", arr))
+                ));
+                // Console.WriteLine(disp.GetType());
+                for (int i = 0; i < 50; i++) {
+                    batch.Post(i);
+                    //if (i % 5 == 0) { batch.TriggerBatch(); }
+                }
+                batch.Complete();
+            }
         }
 
 

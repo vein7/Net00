@@ -40,7 +40,7 @@ namespace KsViTd {
 
         static void Main(string[] args) {
 
-            DoXmIg.DF.BufferBlock1();
+            DoXmIg.DF.BatchBlock1();
             //EnumEF.Test();
             //Stopwatch.StartNew
 

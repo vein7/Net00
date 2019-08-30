@@ -8,7 +8,7 @@ namespace TestDLL {
     class Async {
         public static async Task<string> Test1() {
             await Task.Delay(1);
-            return "sss";
+            return $"sss{11}";
         }
     }
 }
