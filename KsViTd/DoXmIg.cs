@@ -1411,7 +1411,7 @@ namespace KsViTd {
                 Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId}");
                 Console.WriteLine($"{await tran.ReceiveAsync()}, {Thread.CurrentThread.ManagedThreadId}");
                 Console.WriteLine($"{await tran.ReceiveAsync()}, {Thread.CurrentThread.ManagedThreadId}");
-                
+
             }
 
             public static void BatchBlock1() {
@@ -1429,6 +1429,23 @@ namespace KsViTd {
         }
 
 
+        #endregion
+
+        #region PLinq
+        public static void PLinq1() {
+            var data = new[] { "41", "40", "33", "28", "24", "32", "23", };
+            var res = data.AsParallel()
+                .Where(s => s.Length >= 2)
+                .Select(s => s + Thread.CurrentThread.ManagedThreadId)
+                .OrderBy(s => s[1])//.AsSequential()
+                .Take(4).ToArray();
+            PrintArr(res);
+        }
+        public static void PrintArr<T>(IEnumerable<T> ls) {
+            foreach (var i in ls) {
+                Console.Write(i.ToString() + ", ");
+            }
+        }
         #endregion
     }
 

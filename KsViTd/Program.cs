@@ -40,10 +40,11 @@ namespace KsViTd {
 
         static void Main(string[] args) {
 
-            DoXmIg.DF.BatchBlock1();
+
+            DoXmIg.PLinq1();
             //EnumEF.Test();
             //Stopwatch.StartNew
-
+            
             Debug.WriteLine("SomeText");
             //CsLang.TestInterface();
             //new FjUe();

@@ -106,5 +106,14 @@ namespace TestDLL {
             // int LocatFn() => a + b;          // 本地函数也不能使用
         }
 
+        public void DvXl1() {
+            Action<int> act = null;
+            act = (n) => {
+                if (n > 10 || n < 0) { return; }
+                act(n--);
+            };
+            act(5);
+            // 
+        }
     }
 }

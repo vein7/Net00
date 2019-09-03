@@ -209,8 +209,41 @@ namespace KsViTd {
             }
         }
 
+        interface IMBase {
+            void Base();
+        };
+        interface IMA : IMBase {
+            void A();
+        }
+        interface IMB : IMBase {
+            void B();
+        }
+
+        class IM : IMA, IMB {
+            public void A() { }
+            public void B() { }
+            public void Base() { }
+
+            // 不支持这种显式实现，
+            //void IMA.Base() { }
+            //void IMB.Base() { }
+            // 只允许这种显式实现，
+            //void IMBase.Base() { }
+            // 此时 IMBase 不需要明确是属于谁的接口，只是表明 IM 类实现了三个接口：IMA, IMB, IMBase，这只是约束，并不归属接口谁属于谁
+
+        }
+
+
         #endregion
 
+        #region Dll
+        public class Amb {
+            public void Test() {
+                var ambs = AppDomain.CurrentDomain.GetAssemblies();      // 获取当前已加载的程序集，程序集并不是立即加载的
+                //ambs[1].GetReferencedAssemblies
+            }
+        }
+        #endregion
     }
 
     #region 枚举
