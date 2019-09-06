@@ -201,3 +201,46 @@ namespace KsViTd.Excel {
 
 
 }
+namespace KsViTd.Excel2 {
+    public interface IReadCell {
+        void Reading(object obj);
+    }
+    public delegate bool DTry<T, TValue>(T obj, out TValue val);
+
+    public abstract class CellBase<TValue> : IReadCell {
+        public string Name;
+        public TValue Value;
+        /// <summary>
+        /// 把 object 解析为 TValue 类型，如果Parse 是null，会尝试调用默认解析方法
+        /// </summary>
+        public DTry<object, TValue> TryParse;
+        /// <summary>
+        /// Verify 执行一定是经过 Parse 之后，Value 的值一定有效的，然后才进行其他验证的。
+        /// </summary>
+        //public Action<CellBase<TValue>, Msg> Verify;
+
+        //public CellBase(string name) { Name = name; }
+
+        public abstract void Reading(object obj);
+    }
+
+    public abstract class CellN<TValue> : CellBase<TValue> {
+        public override void Reading(object obj) {
+
+        }
+    }
+
+    public static class Cell {
+        public static CellBase<TValue> New<TValue>(string name, Action<TValue> Verify) {
+            
+            return null;
+        }
+        public static CellN<TValue> New<TValue>(string name, Action<TValue?> Verify) where TValue : struct {
+            return null;
+        }
+
+        public static void Test() {
+            Cell.New<int?>("AA", (int? s) => { });
+        }
+    }
+}

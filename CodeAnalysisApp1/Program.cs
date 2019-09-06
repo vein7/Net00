@@ -136,9 +136,9 @@ namespace HelloWorld
             WriteLine(root.ToString());
         }
 
-
         static async Task Main2(string[] args) {
-            // Attempt to set the version of MSBuild.
+#pragma warning restore CS1030 // #warning ЦёБо
+                              // Attempt to set the version of MSBuild.
             var visualStudioInstances = MSBuildLocator.QueryVisualStudioInstances().ToArray();
             var instance = visualStudioInstances.Length == 1
                 // If there is only one instance of MSBuild on this machine, set that as the one to use.
