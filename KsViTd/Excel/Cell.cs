@@ -224,23 +224,39 @@ namespace KsViTd.Excel2 {
         public abstract void Reading(object obj);
     }
 
-    public abstract class CellN<TValue> : CellBase<TValue> {
+    public class CellN<TValue> : CellBase<TValue> {
         public override void Reading(object obj) {
 
         }
     }
 
     public static class Cell {
-        public static CellBase<TValue> New<TValue>(string name, Action<TValue> Verify) {
+        public static CellBase<TValue> New<TValue>(string name, Action<TValue> verify) {
             
             return null;
         }
-        public static CellN<TValue> New<TValue>(string name, Action<TValue?> Verify) where TValue : struct {
-            return null;
-        }
+        //public static CellN<TValue> New<TValue>(string name, Action<TValue?> Verify) where TValue : struct {
+        //    return null;
+        //}
 
         public static void Test() {
             Cell.New<int?>("AA", (int? s) => { });
+        }
+
+        class CellFactory {
+            static CellFactory() {
+                CellFactory_<int>.Ctor = (s, v) => {
+                    return new CellN<int>();
+                };
+            }
+            
+
+            static class CellFactory_<T> {
+                static public Func<string, Delegate, object> Ctor;
+                static public TCell New<TCell, TValue>(string name, Action<TValue> verify) {
+                    return (TCell)Ctor(name, verify);
+                }
+            }
         }
     }
 }
