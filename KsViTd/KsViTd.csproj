@@ -60,6 +60,7 @@
     <Compile Include="DoXmIg.cs" />
     <Compile Include="DynamicTest.cs" />
     <Compile Include="EFun.cs" />
+    <Compile Include="EnumDescription.cs" />
     <Compile Include="Excel\Cell.cs" />
     <Compile Include="Excel\ColModels.cs" />
     <Compile Include="Excel\ExcelReader.cs" />

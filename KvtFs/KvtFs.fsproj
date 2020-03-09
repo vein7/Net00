@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="c1.fs" />
     <Compile Include="Si.fs" />
     <Compile Include="Bst.fs" />
     <Compile Include="Program.fs" />

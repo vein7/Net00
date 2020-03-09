@@ -20,13 +20,13 @@ namespace TestDLL {
             // 函数开始执行时， newobj    instance void TestDLL.BiBc/'<>c__DisplayClass6_0'::.ctor()
         }
 
-        public Func<int,int> LwIgYr() {
+        public Func<int, int> LwIgYr() {
             return (n) => Count + Width + 100;
 
             // 当闭包仅仅捕获的是类的成员时，编译器会为匿名函数生成一个函数，挂在当前类中，如：TestDLL.BiBc::'<LwIgYr>b__7_0'
         }
 
-        public Func<int,int> NiMkHjUu() {
+        public Func<int, int> NiMkHjUu() {
             Func<int, string> fun2 = (n) => n.ToString() + ".00";
             return (n) => n + 100;
 
@@ -36,7 +36,7 @@ namespace TestDLL {
         }
 
         public Func<int, int> NiMkHjUu2() {
-            Func<int, string> fun2 = (n) => n.ToString() + ".0000"; 
+            Func<int, string> fun2 = (n) => n.ToString() + ".0000";
             return (n) => n + 10000;
         }
 
@@ -106,7 +106,7 @@ namespace TestDLL {
             // int LocatFn() => a + b;          // 本地函数也不能使用
         }
 
-        public void DvXl1() {
+        public void DiGv1() {
             Action<int> act = null;
             act = (n) => {
                 if (n > 10 || n < 0) { return; }
@@ -115,5 +115,16 @@ namespace TestDLL {
             act(5);
             // 
         }
+
+        public void FjXk1<T>() {
+            var c1 = new Cell<T>();
+            Action act1 = () => c1.Value.ToString();
+        }
+
+        public void FjXk2<T>(T t) {
+            Action act1 = () => t.ToString();
+        }
+
+        class Cell<T> { public T Value; }
     }
 }

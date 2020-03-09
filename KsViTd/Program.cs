@@ -8,6 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using KsViTd.Base;
+using static KsViTd.Base.PrimitiveEx;
+
 
 namespace KsViTd {
 
@@ -15,10 +17,13 @@ namespace KsViTd {
         public TKey Key;
         public TValue Value;
 
-        public Kv(TKey key, TValue value) {
-            Key = key;
-            Value = value;
-        }
+        //public Kv(TKey key, TValue value) {
+        //    Key = key;
+        //    Value = value;
+        //}
+    }
+    static class Kv {
+        public static Kv<TKey, TValue> New<TKey, TValue>(TKey key, TValue value) => new Kv<TKey, TValue> { Key = key, Value = value };
     }
 
     //struct Nullb<T> where T : struct {
@@ -38,13 +43,44 @@ namespace KsViTd {
 
     class Program {
 
-        static void Main(string[] args) {
+        static void TestArr() {
+            Console.WriteLine("aa");
+            var length = 50_000_000;
+            var ls = new List<int>(length);
+            for (int i = 0; i < length; i++) {
+                ls.Add(i);
+            }
+            Console.WriteLine($"{ls.Count}, {length}");
+            long a = 0, b = 0;
+            var sw = Stopwatch.StartNew();
 
+            sw.Restart();
+            for (int i = 0; i < ls.Count; i++) {
+                a = ls[i] + a % (i + 1);
+            }
+            sw.Stop();
+            var t1 = sw.Elapsed;
+
+            sw.Restart();
+            for (int i = 0; i < length; i++) {
+                b += ls[i] + b % (i + 1);
+            }
+            sw.Stop();
+            var t2 = sw.Elapsed;
+            Console.WriteLine($"a: {a}, b: {b}, t1: {t1}, t2: {t2}");
+        }
+
+        static void Main(string[] args) {
+            //TestArr();
+            var a = New.Dic(3, 3);
+
+            Console.ReadLine();
+            return;
 
             DoXmIg.PLinq1();
             //EnumEF.Test();
             //Stopwatch.StartNew
-            
+
             Debug.WriteLine("SomeText");
             //CsLang.TestInterface();
             //new FjUe();
@@ -84,7 +120,11 @@ namespace KsViTd {
 
             Console.ReadKey();
 
+            void Fn1<W, S>()
+                where W : class
+                where S : struct {
 
+            }
         }
         class A {
             int a = 3;
@@ -104,10 +144,6 @@ namespace KsViTd {
             }
         }
 
-        static IEnumerable<int> IEnumTest() {
-            Console.WriteLine("IEnumTest");
-            return new[] { 1, 3, 3 };
-        }
         static int[] Calc() {
             var ls = new[] { 1, 2 };
             try {
@@ -171,7 +207,7 @@ namespace KsViTd {
 
         #region Class
         class C1 {
-            public Kv<int, int> Kv = new Kv<int, int>(3, 4);
+            public Kv<int, int> Kv = KsViTd.Kv.New(3, 4);
             public int IntA;
             public int IntB { get; set; }
 

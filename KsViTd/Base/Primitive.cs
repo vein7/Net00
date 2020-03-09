@@ -62,4 +62,18 @@ namespace KsViTd.Base {
         }
         public static void Register() { }
     }
+
+
+    public static class PrimitiveEx
+    {
+        public struct NewCtor { }
+        public readonly static NewCtor New = new NewCtor();
+
+        public static Dictionary<K, V> Dic<K, V>(this NewCtor New, K key, V value)
+        {
+            return new Dictionary<K, V>();
+        }
+    }
+
+
 }
