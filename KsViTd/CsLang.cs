@@ -149,23 +149,25 @@ namespace KsViTd {
         class Cloneable<T> where T : Cloneable<T> {
             T Clone() => (T)MemberwiseClone();
         }
+
         interface ICloneable<out T> where T : ICloneable<T> {
             T Clone();
         }
 
         class CA : ICloneable<CA> {
             public CA Clone() {
+                const int a = 3;
                 throw new NotImplementedException();
             }
         }
 
         class CB : CA, ICloneable<CB> {
-            public CB Clone() {
+            new public CB Clone() {
                 throw new NotImplementedException();
             }
             public void Test() {
-                base.Clone();
-                this.Clone();
+                CA cA = base.Clone();
+                CA cB = this.Clone();
             }
         }
 

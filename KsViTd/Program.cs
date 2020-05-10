@@ -72,7 +72,9 @@ namespace KsViTd {
 
         static void Main(string[] args) {
             //TestArr();
-            var a = New.Dic(3, 3);
+            //var a = New.Dic(3, 3);
+            Console.WriteLine(string.Join(",", Calc()));
+            Console.WriteLine(Calc2());
 
             Console.ReadLine();
             return;
@@ -147,6 +149,7 @@ namespace KsViTd {
         static int[] Calc() {
             var ls = new[] { 1, 2 };
             try {
+                // 网上看到一种说法：finally 执行在 return 之前，但我不认为，再看看 Calc2
                 return ls;
             } finally {
                 Console.WriteLine("finally");
@@ -163,6 +166,20 @@ namespace KsViTd {
             }
         }
 
+        static int Calc2() {
+            var a = 22;
+            try {
+                if (a > 10) return a;
+            } finally {
+                a = 333; // 如果在 return 之前执行，那么这个函数的返回值是什么，实际上这个函数的返回值是 22
+                Console.WriteLine("finally "+ a);
+                // return a; // 报错，控制语句不能离开 finally 块。
+                // 这里的代码肯定是在函数跳转之前执行的，
+                // 比如跳转之前，把返回值放在 %eax
+                // 然后再执行这里的 finally 代码块，这里不能也不会重新覆盖 %eax
+            }
+            return a;
+        }
 
 
         static async void Test() {
