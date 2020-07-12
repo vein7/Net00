@@ -44,6 +44,9 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Interactive, Version=4.1.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Interactive.4.1.1\lib\net45\System.Interactive.dll</HintPath>
+    </Reference>
     <Reference Include="System.Threading.Tasks.Dataflow, Version=4.6.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Dataflow.4.9.0\lib\netstandard2.0\System.Threading.Tasks.Dataflow.dll</HintPath>
     </Reference>
@@ -67,6 +70,7 @@
     <Compile Include="Excel\ExcelWriter.cs" />
     <Compile Include="Excel\Import.cs" />
     <Compile Include="Excel\MsgHtml.cs" />
+    <Compile Include="ExpressionTest.cs" />
     <Compile Include="FilterQurey.cs" />
     <Compile Include="FjUe.cs" />
     <Compile Include="GC.cs" />
@@ -75,9 +79,11 @@
     <Compile Include="LqTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SrFa\ErIaUu.cs" />
     <Compile Include="SrFa\HsBc.cs" />
     <Compile Include="Lib\Stack.cs" />
     <Compile Include="Lib\TopList.cs" />
+    <Compile Include="SrFa\LmBc.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

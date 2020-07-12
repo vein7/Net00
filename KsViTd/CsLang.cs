@@ -7,9 +7,30 @@ using System.Threading.Tasks;
 
 namespace KsViTd {
     class CsLang {
-        static class CStatic {
-            static CStatic() {
-                Console.WriteLine("static CStatic");
+
+        public class ClassIniA {
+            public static int a = 1;
+            public int b;
+            public static ClassIniB B;
+            static ClassIniA() {
+                Console.WriteLine("class ini ClassIniA");
+                B = new ClassIniB(); // 此时不会第二次进入构造函数
+                Console.WriteLine("B.b=" + B.b); // B 还是没有执行完构造函数
+                Console.WriteLine("ClassIniB.a=" + ClassIniB.a); // 这个已经执行了
+                Console.WriteLine("ClassIniB.c=" + ClassIniB.c); // 这个没有执行
+            }
+        }
+
+        public class ClassIniB {
+            public static int a = 10;
+            public int b = ClassIniB.c + 100;
+            public static ClassIniA A = new ClassIniA();// 编译后会添加在静态构造函数的前面，并执行
+            public static int c = 20;
+            static ClassIniB() {
+                // 初始化静态字段，所以就去调用 ClassIniA 的静态构造函数
+                Console.WriteLine("class ini ClassIniB");
+                ClassIniB.a += 20;
+                c = 33;
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -123,6 +124,13 @@ namespace TestDLL {
 
         public void FjXk2<T>(T t) {
             Action act1 = () => t.ToString();
+        }
+
+        public void Expression1() {
+            var a = 3;
+            Expression<Func<int>> eps_fn1 = () => a + 10;
+            var fn1 = eps_fn1.Compile();
+            fn1();
         }
 
         class Cell<T> { public T Value; }

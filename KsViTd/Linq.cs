@@ -10,7 +10,6 @@ namespace KsViTd {
 
         public Linq() {
             //GetEnumerator();
-            
 
         }
         

@@ -73,8 +73,8 @@ namespace KsViTd {
         static void Main(string[] args) {
             //TestArr();
             //var a = New.Dic(3, 3);
-            Console.WriteLine(string.Join(",", Calc()));
-            Console.WriteLine(Calc2());
+            //ExpressionTest.Modify1();
+            Console.WriteLine(CsLang.ClassIniB.A.b);
 
             Console.ReadLine();
             return;
